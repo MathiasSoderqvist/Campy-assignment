@@ -1,5 +1,5 @@
 // Types for subscriptions
-type SubscriptionPlan = "MONTHLY" | "YEARLY" | "LIFETIME";
+type SubscriptionPlan = "MONTHLY" | "YEARLY" | "LIFETIME" | "TRIAL";
 type SubscriptionStatus = "ACTIVE" | "CANCELLED" | "EXPIRED" | "NONE";
 
 interface Subscription {
@@ -18,17 +18,31 @@ interface User {
   displayName: string;
   isCampyPlus: boolean;
   subscription: Subscription | null;
+  deviceId?: string;
+}
+
+interface DeviceSubscription {
+  deviceId: string;
+  subscription: Subscription;
+  purchasedAt: string;
+  linkedToUserId?: string;
 }
 
 // Mock user database (in-memory for demo)
 const users: Map<string, User> = new Map();
+
+// Mock device subscription database (in-memory for demo)
+// Key: deviceId, Value: DeviceSubscription
+const deviceSubscriptions: Map<string, DeviceSubscription> = new Map();
 
 // Helper to calculate subscription end date
 function calculateEndDate(plan: SubscriptionPlan, startDate: Date): string | null {
   if (plan === "LIFETIME") return null;
 
   const endDate = new Date(startDate);
-  if (plan === "MONTHLY") {
+  if (plan === "TRIAL") {
+    endDate.setDate(endDate.getDate() + 1);
+  } else if (plan === "MONTHLY") {
     endDate.setMonth(endDate.getMonth() + 1);
   } else if (plan === "YEARLY") {
     endDate.setFullYear(endDate.getFullYear() + 1);
@@ -179,7 +193,40 @@ function getUserResponse(user: User) {
     displayName: user.displayName,
     isCampyPlus: isSubscriptionActive(user.subscription),
     subscription: user.subscription,
+    deviceId: user.deviceId,
   };
+}
+
+// Helper to check if device subscription is active
+function isDeviceSubscriptionActive(deviceId: string): boolean {
+  const deviceSub = deviceSubscriptions.get(deviceId);
+  if (!deviceSub) return false;
+  if (deviceSub.linkedToUserId) return false; // Already linked to a user
+  return isSubscriptionActive(deviceSub.subscription);
+}
+
+// Helper to link device subscription to user
+function linkDeviceSubscriptionToUser(deviceId: string, userId: string): { linked: boolean; subscription?: Subscription } {
+  const deviceSub = deviceSubscriptions.get(deviceId);
+  if (!deviceSub) {
+    return { linked: false };
+  }
+  
+  // Check if already linked to another user
+  if (deviceSub.linkedToUserId && deviceSub.linkedToUserId !== userId) {
+    return { linked: false };
+  }
+  
+  // Check if subscription is still active
+  if (!isSubscriptionActive(deviceSub.subscription)) {
+    return { linked: false };
+  }
+  
+  // Link the subscription
+  deviceSub.linkedToUserId = userId;
+  deviceSubscriptions.set(deviceId, deviceSub);
+  
+  return { linked: true, subscription: deviceSub.subscription };
 }
 
 export const resolvers = {
@@ -213,19 +260,57 @@ export const resolvers = {
       }
       return getUserResponse(user);
     },
+    deviceSubscription: (
+      _: unknown,
+      { deviceId }: { deviceId: string }
+    ) => {
+      const deviceSub = deviceSubscriptions.get(deviceId);
+      if (!deviceSub) {
+        return null;
+      }
+      // Don't return if already linked to a user
+      if (deviceSub.linkedToUserId) {
+        return null;
+      }
+      // Check if still active
+      if (!isSubscriptionActive(deviceSub.subscription)) {
+        return null;
+      }
+      return deviceSub.subscription;
+    },
   },
   Mutation: {
     login: (
       _: unknown,
-      { email, password }: { email: string; password: string }
+      { email, password, deviceId }: { email: string; password: string; deviceId?: string }
     ) => {
       if (email === mockUser.email && password === mockUser.password) {
         // Set current user for session
         currentUserId = mockUser.uid;
         const user = users.get(mockUser.uid)!;
+        
+        let linkedSubscription = false;
+        
+        // If deviceId is provided, try to link any anonymous subscription
+        if (deviceId) {
+          user.deviceId = deviceId;
+          
+          // Check if there's an active device subscription to link
+          const linkResult = linkDeviceSubscriptionToUser(deviceId, user.uid);
+          if (linkResult.linked && linkResult.subscription) {
+            // Transfer the subscription to the user
+            user.subscription = linkResult.subscription;
+            user.isCampyPlus = true;
+            linkedSubscription = true;
+          }
+          
+          users.set(mockUser.uid, user);
+        }
+        
         return {
           token: "mock-jwt-token-" + Date.now(),
           user: getUserResponse(user),
+          linkedSubscription,
         };
       }
       throw new Error("Invalid email or password");
@@ -356,6 +441,105 @@ export const resolvers = {
         success: false,
         user: getUserResponse(user),
         message: "No previous purchases found to restore",
+      };
+    },
+
+    purchaseSubscriptionAnonymous: (
+      _: unknown,
+      { plan, receipt, deviceId }: { plan: SubscriptionPlan; receipt: string; deviceId: string }
+    ) => {
+      // Validate deviceId
+      if (!deviceId || deviceId.length < 10) {
+        return {
+          success: false,
+          deviceId: deviceId || "",
+          subscription: null,
+          message: "Invalid device ID",
+        };
+      }
+
+      // Validate receipt (mock validation - in production, verify with App Store/Play Store)
+      if (!receipt || receipt.length < 10) {
+        return {
+          success: false,
+          deviceId,
+          subscription: null,
+          message: "Invalid purchase receipt",
+        };
+      }
+
+      // Check if device already has an active subscription
+      const existingSub = deviceSubscriptions.get(deviceId);
+      if (existingSub && isSubscriptionActive(existingSub.subscription) && !existingSub.linkedToUserId) {
+        return {
+          success: false,
+          deviceId,
+          subscription: existingSub.subscription,
+          message: "Device already has an active subscription",
+        };
+      }
+
+      // Create subscription
+      const startDate = new Date();
+      const subscription: Subscription = {
+        plan,
+        status: "ACTIVE",
+        startDate: startDate.toISOString(),
+        endDate: calculateEndDate(plan, startDate),
+        autoRenew: plan !== "LIFETIME",
+        transactionId: `txn_anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      };
+
+      // Store device subscription
+      const deviceSubscription: DeviceSubscription = {
+        deviceId,
+        subscription,
+        purchasedAt: new Date().toISOString(),
+      };
+      deviceSubscriptions.set(deviceId, deviceSubscription);
+
+      return {
+        success: true,
+        deviceId,
+        subscription,
+        message: `Successfully purchased Campy Plus (${plan.toLowerCase()}) as anonymous user. Create an account to access all features.`,
+      };
+    },
+
+    linkDeviceSubscription: (
+      _: unknown,
+      { deviceId }: { deviceId: string }
+    ) => {
+      if (!currentUserId) {
+        throw new Error("Not authenticated");
+      }
+
+      const user = users.get(currentUserId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Try to link the device subscription
+      const linkResult = linkDeviceSubscriptionToUser(deviceId, user.uid);
+      
+      if (!linkResult.linked) {
+        return {
+          success: false,
+          user: getUserResponse(user),
+          message: "No active subscription found for this device, or subscription already linked to another account",
+        };
+      }
+
+      // Transfer the subscription to the user
+      user.subscription = linkResult.subscription!;
+      user.isCampyPlus = true;
+      user.deviceId = deviceId;
+      users.set(currentUserId, user);
+
+      return {
+        success: true,
+        user: getUserResponse(user),
+        message: "Device subscription successfully linked to your account",
       };
     },
   },

@@ -62,6 +62,13 @@
     "thankYou": "Merci d'être abonné à Campy Plus. Profitez de toutes les fonctionnalités premium!",
     "currentPlan": "Forfait actuel",
     "validUntil": "Valide jusqu'au",
+    "anonymousPurchaseMessage": "Votre abonnement est actif ! Créez un compte pour synchroniser sur tous vos appareils et débloquer toutes les fonctionnalités.",
+    "anonymousSubscribedMessage": "Vous avez un abonnement Campy Plus actif. Créez un compte pour le lier et accéder à toutes les fonctionnalités sur tous vos appareils.",
+    "signUpToLinkSubscription": "Inscrivez-vous ou connectez-vous pour lier votre abonnement à votre compte.",
+    "subscriptionLinked": "Abonnement lié",
+    "subscriptionLinkedMessage": "Votre abonnement Campy Plus a été lié à votre compte.",
+    "startTrial": "Commencer l'essai gratuit",
+    "trialDescription": "Essayez toutes les fonctionnalités gratuitement pendant 1 jour",
     "plans": {
       "monthly": "Mensuel",
       "yearly": "Annuel",

@@ -58,12 +58,13 @@ export const FETCH_ME = gql`
 
 export const LOGIN_MUTATION = gql`
   ${USER_FRAGMENT}
-  mutation Login($email: String!, $password: String!) {
-    login(email: $email, password: $password) {
+  mutation Login($email: String!, $password: String!, $deviceId: String) {
+    login(email: $email, password: $password, deviceId: $deviceId) {
       token
       user {
         ...UserFragment
       }
+      linkedSubscription
     }
   }
 `;
@@ -103,6 +104,42 @@ export const RESTORE_PURCHASES_MUTATION = gql`
       user {
         ...UserFragment
       }
+    }
+  }
+`;
+
+export const PURCHASE_SUBSCRIPTION_ANONYMOUS_MUTATION = gql`
+  ${SUBSCRIPTION_FRAGMENT}
+  mutation PurchaseSubscriptionAnonymous($plan: SubscriptionPlan!, $receipt: String!, $deviceId: String!) {
+    purchaseSubscriptionAnonymous(plan: $plan, receipt: $receipt, deviceId: $deviceId) {
+      success
+      deviceId
+      subscription {
+        ...SubscriptionFragment
+      }
+      message
+    }
+  }
+`;
+
+export const LINK_DEVICE_SUBSCRIPTION_MUTATION = gql`
+  ${USER_FRAGMENT}
+  mutation LinkDeviceSubscription($deviceId: String!) {
+    linkDeviceSubscription(deviceId: $deviceId) {
+      success
+      message
+      user {
+        ...UserFragment
+      }
+    }
+  }
+`;
+
+export const DEVICE_SUBSCRIPTION_QUERY = gql`
+  ${SUBSCRIPTION_FRAGMENT}
+  query DeviceSubscription($deviceId: String!) {
+    deviceSubscription(deviceId: $deviceId) {
+      ...SubscriptionFragment
     }
   }
 `;

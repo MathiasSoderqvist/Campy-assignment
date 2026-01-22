@@ -35,9 +35,11 @@ export type LocationEventParams = {
  */
 export type SubscriptionEventParams = {
   plan_id: string;
-  plan_type: 'MONTHLY' | 'YEARLY' | 'LIFETIME';
+  plan_type: 'MONTHLY' | 'YEARLY' | 'LIFETIME' | 'TRIAL';
   price?: string;
   currency?: string;
+  is_anonymous?: boolean;
+  is_trial?: boolean;
 };
 
 /**
@@ -124,6 +126,7 @@ export const AnalyticsEvents = {
   SUBSCRIPTION_CANCEL_START: 'subscription_cancel_start',
   SUBSCRIPTION_CANCEL_SUCCESS: 'subscription_cancel_success',
   SUBSCRIPTION_CANCEL_FAILED: 'subscription_cancel_failed',
+  SUBSCRIPTION_LINKED: 'subscription_linked',
 
   // -------------------------------------------------------------------------
   // Onboarding Events
@@ -359,6 +362,8 @@ class Analytics {
       plan_id: params.plan_id,
       plan_type: params.plan_type,
       price: params.price ?? '',
+      is_anonymous: params.is_anonymous ?? false,
+      is_trial: params.is_trial ?? false,
     });
   }
 
@@ -367,6 +372,8 @@ class Analytics {
       plan_id: params.plan_id,
       plan_type: params.plan_type,
       price: params.price ?? '',
+      is_anonymous: params.is_anonymous ?? false,
+      is_trial: params.is_trial ?? false,
     });
   }
 
@@ -389,6 +396,17 @@ class Analytics {
     Analytics.track(AnalyticsEvents.SUBSCRIPTION_CANCEL_FAILED, {
       error: error.substring(0, 100),
     });
+  }
+
+  static trackSubscriptionLinked(method: 'login' | 'manual') {
+    Analytics.track(AnalyticsEvents.SUBSCRIPTION_LINKED, { method });
+  }
+
+  /**
+   * Generic event tracking for custom events
+   */
+  static trackEvent(eventName: string, params?: Record<string, string | number | boolean>) {
+    Analytics.track(eventName, params);
   }
 
   // -------------------------------------------------------------------------

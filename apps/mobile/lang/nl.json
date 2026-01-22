@@ -62,6 +62,13 @@
     "thankYou": "Bedankt dat je een Campy Plus-abonnee bent. Geniet van alle premium functies!",
     "currentPlan": "Huidig abonnement",
     "validUntil": "Geldig tot",
+    "anonymousPurchaseMessage": "Je abonnement is actief! Maak een account aan om te synchroniseren tussen apparaten en alle functies te ontgrendelen.",
+    "anonymousSubscribedMessage": "Je hebt een actief Campy Plus-abonnement. Maak een account aan om het te koppelen en toegang te krijgen tot alle functies op al je apparaten.",
+    "signUpToLinkSubscription": "Registreer of log in om je abonnement aan je account te koppelen.",
+    "subscriptionLinked": "Abonnement gekoppeld",
+    "subscriptionLinkedMessage": "Je Campy Plus-abonnement is gekoppeld aan je account.",
+    "startTrial": "Gratis proefperiode starten",
+    "trialDescription": "Probeer alle functies 1 dag gratis",
     "plans": {
       "monthly": "Maandelijks",
       "yearly": "Jaarlijks",

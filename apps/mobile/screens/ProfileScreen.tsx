@@ -26,7 +26,17 @@ export function ProfileScreen() {
   const { t, i18n } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { isAuthenticated, user, logout, updateUser } = useAuthStore();
+  const { 
+    isAuthenticated, 
+    user, 
+    logout, 
+    updateUser,
+    clearAnonymousSubscription,
+    hasActiveAnonymousSubscription,
+    anonymousSubscription,
+  } = useAuthStore();
+  
+  const isAnonymousSubscribed = hasActiveAnonymousSubscription();
 
   const [cancelSubscription, { loading: cancelLoading }] = useMutation<CancelSubscriptionData>(CANCEL_SUBSCRIPTION_MUTATION, {
     onCompleted: (data: CancelSubscriptionData) => {
@@ -57,6 +67,24 @@ export function ProfileScreen() {
     );
   };
 
+  const handleClearAnonymousSubscription = () => {
+    Alert.alert(
+      'Remove Subscription',
+      'Are you sure you want to remove your anonymous subscription? This action cannot be undone.',
+      [
+        { text: 'No', style: 'cancel' },
+        { 
+          text: 'Yes, Remove', 
+          style: 'destructive', 
+          onPress: () => {
+            clearAnonymousSubscription();
+            Alert.alert('Success', 'Anonymous subscription removed');
+          }
+        },
+      ]
+    );
+  };
+
   const handleLogout = () => {
     Analytics.trackLogout();
     logout();
@@ -69,7 +97,29 @@ export function ProfileScreen() {
   };
 
   if (!isAuthenticated) {
-    return <LoginForm />;
+    return (
+      <ThemedView style={styles.container}>
+        <LoginForm />
+        {isAnonymousSubscribed && anonymousSubscription && (
+          <View style={styles.anonymousSubscriptionContainer}>
+            <ThemedText style={styles.anonymousSubscriptionTitle}>
+              {'<debug> Anonymous Subscription Active'}
+            </ThemedText>
+            <ThemedText style={styles.anonymousSubscriptionPlan}>
+              Plan: {anonymousSubscription.subscription.plan}
+            </ThemedText>
+            <TouchableOpacity
+              style={[styles.cancelButton, { borderColor: '#ff4444' }]}
+              onPress={handleClearAnonymousSubscription}
+            >
+              <ThemedText style={[styles.cancelText, { color: '#ff4444' }]}>
+                {'<debug> Remove Anonymous Subscription'}
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+        )}
+      </ThemedView>
+    );
   }
 
   return (
@@ -198,5 +248,23 @@ const styles = StyleSheet.create({
   cancelText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  anonymousSubscriptionContainer: {
+    padding: 20,
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+    marginTop: 20,
+  },
+  anonymousSubscriptionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#ff9500',
+  },
+  anonymousSubscriptionPlan: {
+    fontSize: 12,
+    marginBottom: 12,
+    opacity: 0.7,
   },
 });

@@ -1,5 +1,5 @@
 import { useMutation } from '@apollo/client/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import Analytics from '@/api/Analytics';
+import { getDeviceId } from '@/api/DeviceId';
 import Firebase from '@/api/Firebase';
 import { LOGIN_MUTATION } from '@/api/graphql_queries';
 import { ThemedText } from '@/components/themed-text';
@@ -23,6 +24,7 @@ type LoginResponse = {
   login: {
     token: string;
     user: User;
+    linkedSubscription?: boolean;
   };
 };
 
@@ -30,18 +32,42 @@ export function LoginForm() {
   const { t } = useTranslation();
   const [email, setEmail] = useState('test@campy.app');
   const [password, setPassword] = useState('campy');
+  const [deviceId, setDeviceIdState] = useState<string | null>(null);
   const colorScheme = useColorScheme();
   const setUser = useAuthStore((state) => state.setUser);
+  const setDeviceId = useAuthStore((state) => state.setDeviceId);
+  const clearAnonymousSubscription = useAuthStore((state) => state.clearAnonymousSubscription);
+  const anonymousSubscription = useAuthStore((state) => state.anonymousSubscription);
+
+  // Load device ID on mount
+  useEffect(() => {
+    const loadDeviceId = async () => {
+      const id = await getDeviceId();
+      setDeviceIdState(id);
+      setDeviceId(id);
+    };
+    loadDeviceId();
+  }, [setDeviceId]);
 
   const [login, { loading }] = useMutation<LoginResponse>(LOGIN_MUTATION, {
     onCompleted: (data) => {
-      const { token, user } = data.login;
+      const { token, user, linkedSubscription } = data.login;
       setUser(user, token);
       Firebase.setUser({ uid: user.uid, email: user.email });
       Analytics.trackLogin('email');
       Analytics.setUserProperties({
         is_premium: user.isCampyPlus,
       });
+
+      // If subscription was linked, clear the local anonymous subscription and notify user
+      if (linkedSubscription) {
+        clearAnonymousSubscription();
+        Analytics.trackEvent('subscription_linked', { method: 'login' });
+        Alert.alert(
+          t('campyPlus.subscriptionLinked'),
+          t('campyPlus.subscriptionLinkedMessage')
+        );
+      }
     },
     onError: (error) => {
       Alert.alert(t('login.loginFailed'), error.message);
@@ -49,12 +75,28 @@ export function LoginForm() {
     },
   });
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert(t('common.error'), t('login.validationError'));
       return;
     }
-    login({ variables: { email, password } });
+    
+    // If we don't have deviceId yet, get it now
+    let currentDeviceId = deviceId;
+    if (!currentDeviceId) {
+      currentDeviceId = await getDeviceId();
+      setDeviceIdState(currentDeviceId);
+      setDeviceId(currentDeviceId);
+    }
+    
+    // Pass deviceId to link any anonymous subscription
+    login({ 
+      variables: { 
+        email, 
+        password,
+        deviceId: anonymousSubscription ? currentDeviceId : undefined,
+      } 
+    });
   };
 
   const colors = Colors[colorScheme ?? 'light'];

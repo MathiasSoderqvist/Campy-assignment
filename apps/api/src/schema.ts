@@ -15,6 +15,7 @@ export const typeDefs = `#graphql
     MONTHLY
     YEARLY
     LIFETIME
+    TRIAL
   }
 
   enum SubscriptionStatus {
@@ -39,11 +40,13 @@ export const typeDefs = `#graphql
     displayName: String
     isCampyPlus: Boolean!
     subscription: Subscription
+    deviceId: String
   }
 
   type AuthPayload {
     token: String!
     user: User!
+    linkedSubscription: Boolean
   }
 
   type PurchaseResult {
@@ -52,16 +55,32 @@ export const typeDefs = `#graphql
     message: String
   }
 
+  type AnonymousPurchaseResult {
+    success: Boolean!
+    deviceId: String!
+    subscription: Subscription
+    message: String
+  }
+
+  type LinkSubscriptionResult {
+    success: Boolean!
+    user: User
+    message: String
+  }
+
   type Query {
     hello: String
     locationsNearby(latitude: Float!, longitude: Float!, radiusKm: Float): [Location!]!
     me: User
+    deviceSubscription(deviceId: String!): Subscription
   }
 
   type Mutation {
-    login(email: String!, password: String!): AuthPayload!
+    login(email: String!, password: String!, deviceId: String): AuthPayload!
     purchaseSubscription(plan: SubscriptionPlan!, receipt: String!): PurchaseResult!
+    purchaseSubscriptionAnonymous(plan: SubscriptionPlan!, receipt: String!, deviceId: String!): AnonymousPurchaseResult!
     cancelSubscription: PurchaseResult!
     restorePurchases(receipt: String!): PurchaseResult!
+    linkDeviceSubscription(deviceId: String!): LinkSubscriptionResult!
   }
 `;

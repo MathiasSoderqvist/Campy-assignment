@@ -4,14 +4,24 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import Analytics from '../api/Analytics';
-import { PURCHASE_SUBSCRIPTION_MUTATION } from '../api/graphql_queries';
-import { SubscriptionPlan as SubscriptionPlanType, useAuthStore, User } from '../stores/authStore';
+import { getDeviceId } from '../api/DeviceId';
+import { PURCHASE_SUBSCRIPTION_ANONYMOUS_MUTATION, PURCHASE_SUBSCRIPTION_MUTATION } from '../api/graphql_queries';
+import { Subscription, SubscriptionPlan as SubscriptionPlanType, useAuthStore, User } from '../stores/authStore';
 
 type PurchaseSubscriptionData = {
   purchaseSubscription: {
     success: boolean;
     message: string;
     user: User;
+  };
+};
+
+type AnonymousPurchaseData = {
+  purchaseSubscriptionAnonymous: {
+    success: boolean;
+    deviceId: string;
+    subscription: Subscription | null;
+    message: string;
   };
 };
 
@@ -48,8 +58,13 @@ export function CampyPlusContent({ onPurchaseSuccess }: CampyPlusContentProps) {
   const [selectedPlan, setSelectedPlan] = useState('yearly');
   const updateUser = useAuthStore((state) => state.updateUser);
   const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const setDeviceId = useAuthStore((state) => state.setDeviceId);
+  const setAnonymousSubscription = useAuthStore((state) => state.setAnonymousSubscription);
+  const hasActiveAnonymousSubscription = useAuthStore((state) => state.hasActiveAnonymousSubscription);
 
-  const [purchaseSubscription, { loading }] = useMutation<PurchaseSubscriptionData>(PURCHASE_SUBSCRIPTION_MUTATION, {
+  // Mutation for authenticated users
+  const [purchaseSubscription, { loading: loadingAuth }] = useMutation<PurchaseSubscriptionData>(PURCHASE_SUBSCRIPTION_MUTATION, {
     onCompleted: (data: PurchaseSubscriptionData) => {
       if (data.purchaseSubscription.success) {
         const plan = SUBSCRIPTION_PLANS.find((p) => p.id === selectedPlan);
@@ -75,6 +90,43 @@ export function CampyPlusContent({ onPurchaseSuccess }: CampyPlusContentProps) {
     },
   });
 
+  // Mutation for anonymous users (unauthenticated)
+  const [purchaseSubscriptionAnonymous, { loading: loadingAnonymous }] = useMutation<AnonymousPurchaseData>(PURCHASE_SUBSCRIPTION_ANONYMOUS_MUTATION, {
+    onCompleted: (data: AnonymousPurchaseData) => {
+      if (data.purchaseSubscriptionAnonymous.success && data.purchaseSubscriptionAnonymous.subscription) {
+        const plan = SUBSCRIPTION_PLANS.find((p) => p.id === selectedPlan);
+        Analytics.trackSubscriptionPurchaseSuccess({
+          plan_id: selectedPlan,
+          plan_type: plan?.planType ?? 'MONTHLY',
+          price: plan?.price,
+          is_anonymous: true,
+        });
+        
+        // Store the anonymous subscription locally
+        setAnonymousSubscription({
+          deviceId: data.purchaseSubscriptionAnonymous.deviceId,
+          subscription: data.purchaseSubscriptionAnonymous.subscription,
+          purchasedAt: new Date().toISOString(),
+        });
+        
+        Alert.alert(
+          t('campyPlus.purchaseSuccess'),
+          t('campyPlus.anonymousPurchaseMessage'),
+          [{ text: 'OK', onPress: onPurchaseSuccess }]
+        );
+      } else {
+        Analytics.trackSubscriptionPurchaseFailed(selectedPlan, data.purchaseSubscriptionAnonymous.message);
+        Alert.alert(t('campyPlus.purchaseError'), data.purchaseSubscriptionAnonymous.message);
+      }
+    },
+    onError: (error: Error) => {
+      Analytics.trackSubscriptionPurchaseFailed(selectedPlan, error.message);
+      Alert.alert(t('campyPlus.purchaseError'), error.message);
+    },
+  });
+
+  const loading = loadingAuth || loadingAnonymous;
+
   const handlePlanSelect = (planId: string) => {
     const plan = SUBSCRIPTION_PLANS.find((p) => p.id === planId);
     if (plan) {
@@ -87,29 +139,55 @@ export function CampyPlusContent({ onPurchaseSuccess }: CampyPlusContentProps) {
     setSelectedPlan(planId);
   };
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (isTrial: boolean = false) => {
     const plan = SUBSCRIPTION_PLANS.find((p) => p.id === selectedPlan);
     if (!plan) return;
 
+    const planTypeToUse = isTrial ? 'TRIAL' : plan.planType;
+
     Analytics.trackSubscriptionPurchaseStart({
       plan_id: selectedPlan,
-      plan_type: plan.planType,
-      price: plan.price,
+      plan_type: planTypeToUse,
+      price: isTrial ? 'free' : plan.price,
+      is_anonymous: !isAuthenticated,
+      is_trial: isTrial,
     });
 
     // In production, this would be the actual receipt from App Store/Play Store
     // For demo purposes, we use a mock receipt
-    const mockReceipt = `mock_receipt_${Date.now()}_${plan.planType}`;
+    const mockReceipt = `mock_receipt_${Date.now()}_${planTypeToUse}`;
 
-    await purchaseSubscription({
-      variables: {
-        plan: plan.planType,
-        receipt: mockReceipt,
-      },
-    });
+    if (isAuthenticated) {
+      // Authenticated user - use regular purchase
+      await purchaseSubscription({
+        variables: {
+          plan: planTypeToUse,
+          receipt: mockReceipt,
+        },
+      });
+    } else {
+      // Anonymous user - use device-based purchase
+      const deviceId = await getDeviceId();
+      setDeviceId(deviceId);
+      
+      await purchaseSubscriptionAnonymous({
+        variables: {
+          plan: planTypeToUse,
+          receipt: mockReceipt,
+          deviceId,
+        },
+      });
+    }
   };
 
-  // If user already has Campy Plus, show different content
+  const handleStartTrial = () => {
+    handleSubscribe(true);
+  };
+
+  const anonymousSubscription = useAuthStore((state) => state.anonymousSubscription);
+  const isAnonymousSubscribed = hasActiveAnonymousSubscription();
+
+  // If user already has Campy Plus (authenticated), show subscribed content
   if (user?.isCampyPlus) {
     return (
       <ScrollView
@@ -135,6 +213,37 @@ export function CampyPlusContent({ onPurchaseSuccess }: CampyPlusContentProps) {
             )}
           </View>
         )}
+      </ScrollView>
+    );
+  }
+
+  // If anonymous user has an active subscription, show subscribed content with sign-up prompt
+  if (isAnonymousSubscribed && anonymousSubscription) {
+    return (
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.title}>{t('campyPlus.alreadySubscribed')}</Text>
+        <Text style={styles.description}>
+          {t('campyPlus.anonymousSubscribedMessage')}
+        </Text>
+        <View style={styles.subscriptionInfo}>
+          <Text style={styles.subscriptionLabel}>{t('campyPlus.currentPlan')}</Text>
+          <Text style={styles.subscriptionValue}>{anonymousSubscription.subscription.plan}</Text>
+          {anonymousSubscription.subscription.endDate && (
+            <>
+              <Text style={styles.subscriptionLabel}>{t('campyPlus.validUntil')}</Text>
+              <Text style={styles.subscriptionValue}>
+                {new Date(anonymousSubscription.subscription.endDate).toLocaleDateString()}
+              </Text>
+            </>
+          )}
+        </View>
+        <Text style={styles.signUpPrompt}>
+          {t('campyPlus.signUpToLinkSubscription')}
+        </Text>
       </ScrollView>
     );
   }
@@ -210,7 +319,7 @@ export function CampyPlusContent({ onPurchaseSuccess }: CampyPlusContentProps) {
       <TouchableOpacity
         activeOpacity={0.8}
         style={[styles.subscribeButton, loading && styles.subscribeButtonDisabled]}
-        onPress={handleSubscribe}
+        onPress={() => handleSubscribe(false)}
         disabled={loading}
       >
         {loading ? (
@@ -219,6 +328,20 @@ export function CampyPlusContent({ onPurchaseSuccess }: CampyPlusContentProps) {
           <Text style={styles.subscribeButtonText}>{t('campyPlus.subscribeNow')}</Text>
         )}
       </TouchableOpacity>
+
+      <TouchableOpacity
+        activeOpacity={0.8}
+        style={[styles.trialButton, loading && styles.trialButtonDisabled]}
+        onPress={handleStartTrial}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#007AFF" />
+        ) : (
+          <Text style={styles.trialButtonText}>{t('campyPlus.startTrial')}</Text>
+        )}
+      </TouchableOpacity>
+      <Text style={styles.trialDescription}>{t('campyPlus.trialDescription')}</Text>
 
       <Text style={styles.termsText}>
         {t('campyPlus.terms')}
@@ -355,6 +478,29 @@ const styles = StyleSheet.create({
   subscribeButtonDisabled: {
     backgroundColor: '#A0A0A0',
   },
+  trialButton: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    paddingVertical: 18,
+    marginTop: 12,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#007AFF',
+  },
+  trialButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#007AFF',
+  },
+  trialButtonDisabled: {
+    borderColor: '#A0A0A0',
+  },
+  trialDescription: {
+    fontSize: 12,
+    color: '#687076',
+    textAlign: 'center',
+    marginTop: 8,
+  },
   subscriptionInfo: {
     marginTop: 32,
     backgroundColor: '#F0F7FF',
@@ -371,5 +517,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#11181C',
     marginTop: 4,
+  },
+  signUpPrompt: {
+    fontSize: 14,
+    color: '#007AFF',
+    textAlign: 'center',
+    marginTop: 20,
+    fontWeight: '500',
   },
 });
