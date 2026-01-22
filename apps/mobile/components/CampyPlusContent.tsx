@@ -1,19 +1,32 @@
+import { useMutation } from '@apollo/client/react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-type SubscriptionPlan = {
+import { PURCHASE_SUBSCRIPTION_MUTATION } from '../api/graphql_queries';
+import { SubscriptionPlan as SubscriptionPlanType, useAuthStore, User } from '../stores/authStore';
+
+type PurchaseSubscriptionData = {
+  purchaseSubscription: {
+    success: boolean;
+    message: string;
+    user: User;
+  };
+};
+
+type SubscriptionPlanOption = {
   id: string;
+  planType: SubscriptionPlanType;
   nameKey: string;
   price: string;
   periodKey: string;
   popular?: boolean;
 };
 
-const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
-  { id: 'monthly', nameKey: 'campyPlus.plans.monthly', price: '€9.99', periodKey: 'campyPlus.plans.perMonth' },
-  { id: 'yearly', nameKey: 'campyPlus.plans.yearly', price: '€79.99', periodKey: 'campyPlus.plans.perYear', popular: true },
-  { id: 'lifetime', nameKey: 'campyPlus.plans.lifetime', price: '€199.99', periodKey: 'campyPlus.plans.oneTime' },
+const SUBSCRIPTION_PLANS: SubscriptionPlanOption[] = [
+  { id: 'monthly', planType: 'MONTHLY', nameKey: 'campyPlus.plans.monthly', price: '€9.99', periodKey: 'campyPlus.plans.perMonth' },
+  { id: 'yearly', planType: 'YEARLY', nameKey: 'campyPlus.plans.yearly', price: '€79.99', periodKey: 'campyPlus.plans.perYear', popular: true },
+  { id: 'lifetime', planType: 'LIFETIME', nameKey: 'campyPlus.plans.lifetime', price: '€199.99', periodKey: 'campyPlus.plans.oneTime' },
 ];
 
 const PLUS_FEATURE_KEYS = [
@@ -25,9 +38,79 @@ const PLUS_FEATURE_KEYS = [
   'campyPlus.features.earlyAccess',
 ];
 
-export function CampyPlusContent() {
+type CampyPlusContentProps = {
+  onPurchaseSuccess?: () => void;
+};
+
+export function CampyPlusContent({ onPurchaseSuccess }: CampyPlusContentProps) {
   const { t } = useTranslation();
   const [selectedPlan, setSelectedPlan] = useState('yearly');
+  const updateUser = useAuthStore((state) => state.updateUser);
+  const user = useAuthStore((state) => state.user);
+
+  const [purchaseSubscription, { loading }] = useMutation<PurchaseSubscriptionData>(PURCHASE_SUBSCRIPTION_MUTATION, {
+    onCompleted: (data: PurchaseSubscriptionData) => {
+      if (data.purchaseSubscription.success) {
+        updateUser(data.purchaseSubscription.user);
+        Alert.alert(
+          t('campyPlus.purchaseSuccess'),
+          data.purchaseSubscription.message,
+          [{ text: 'OK', onPress: onPurchaseSuccess }]
+        );
+      } else {
+        Alert.alert(t('campyPlus.purchaseError'), data.purchaseSubscription.message);
+      }
+    },
+    onError: (error: Error) => {
+      Alert.alert(t('campyPlus.purchaseError'), error.message);
+    },
+  });
+
+  const handleSubscribe = async () => {
+    const plan = SUBSCRIPTION_PLANS.find((p) => p.id === selectedPlan);
+    if (!plan) return;
+
+    // In production, this would be the actual receipt from App Store/Play Store
+    // For demo purposes, we use a mock receipt
+    const mockReceipt = `mock_receipt_${Date.now()}_${plan.planType}`;
+
+    await purchaseSubscription({
+      variables: {
+        plan: plan.planType,
+        receipt: mockReceipt,
+      },
+    });
+  };
+
+  // If user already has Campy Plus, show different content
+  if (user?.isCampyPlus) {
+    return (
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.title}>{t('campyPlus.alreadySubscribed')}</Text>
+        <Text style={styles.description}>
+          {t('campyPlus.thankYou')}
+        </Text>
+        {user.subscription && (
+          <View style={styles.subscriptionInfo}>
+            <Text style={styles.subscriptionLabel}>{t('campyPlus.currentPlan')}</Text>
+            <Text style={styles.subscriptionValue}>{user.subscription.plan}</Text>
+            {user.subscription.endDate && (
+              <>
+                <Text style={styles.subscriptionLabel}>{t('campyPlus.validUntil')}</Text>
+                <Text style={styles.subscriptionValue}>
+                  {new Date(user.subscription.endDate).toLocaleDateString()}
+                </Text>
+              </>
+            )}
+          </View>
+        )}
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView
@@ -53,8 +136,9 @@ export function CampyPlusContent() {
 
       <View style={styles.plansContainer}>
         {SUBSCRIPTION_PLANS.map((plan) => (
-          <Pressable
+          <TouchableOpacity
             key={plan.id}
+            activeOpacity={0.7}
             style={[
               styles.planCard,
               selectedPlan === plan.id && styles.planCardSelected,
@@ -92,13 +176,22 @@ export function CampyPlusContent() {
                 {t(plan.periodKey)}
               </Text>
             </View>
-          </Pressable>
+          </TouchableOpacity>
         ))}
       </View>
 
-      <Pressable style={styles.subscribeButton}>
-        <Text style={styles.subscribeButtonText}>{t('campyPlus.subscribeNow')}</Text>
-      </Pressable>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        style={[styles.subscribeButton, loading && styles.subscribeButtonDisabled]}
+        onPress={handleSubscribe}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.subscribeButtonText}>{t('campyPlus.subscribeNow')}</Text>
+        )}
+      </TouchableOpacity>
 
       <Text style={styles.termsText}>
         {t('campyPlus.terms')}
@@ -231,5 +324,25 @@ const styles = StyleSheet.create({
     color: '#687076',
     textAlign: 'center',
     marginTop: 16,
+  },
+  subscribeButtonDisabled: {
+    backgroundColor: '#A0A0A0',
+  },
+  subscriptionInfo: {
+    marginTop: 32,
+    backgroundColor: '#F0F7FF',
+    borderRadius: 16,
+    padding: 20,
+  },
+  subscriptionLabel: {
+    fontSize: 14,
+    color: '#687076',
+    marginTop: 8,
+  },
+  subscriptionValue: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#11181C',
+    marginTop: 4,
   },
 });

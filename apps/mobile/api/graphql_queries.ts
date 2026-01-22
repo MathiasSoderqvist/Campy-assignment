@@ -14,6 +14,30 @@ const LOCATION_FRAGMENT = gql`
   }
 `;
 
+const SUBSCRIPTION_FRAGMENT = gql`
+  fragment SubscriptionFragment on Subscription {
+    plan
+    status
+    startDate
+    endDate
+    autoRenew
+    transactionId
+  }
+`;
+
+const USER_FRAGMENT = gql`
+  ${SUBSCRIPTION_FRAGMENT}
+  fragment UserFragment on User {
+    uid
+    email
+    displayName
+    isCampyPlus
+    subscription {
+      ...SubscriptionFragment
+    }
+  }
+`;
+
 export const FETCH_LOCATIONS_NEARBY = gql`
   ${LOCATION_FRAGMENT}
   query LocationsNearby($latitude: Float!, $longitude: Float!, $radiusKm: Float) {
@@ -23,14 +47,61 @@ export const FETCH_LOCATIONS_NEARBY = gql`
   }
 `;
 
+export const FETCH_ME = gql`
+  ${USER_FRAGMENT}
+  query Me {
+    me {
+      ...UserFragment
+    }
+  }
+`;
+
 export const LOGIN_MUTATION = gql`
+  ${USER_FRAGMENT}
   mutation Login($email: String!, $password: String!) {
     login(email: $email, password: $password) {
       token
       user {
-        uid
-        email
-        displayName
+        ...UserFragment
+      }
+    }
+  }
+`;
+
+export const PURCHASE_SUBSCRIPTION_MUTATION = gql`
+  ${USER_FRAGMENT}
+  mutation PurchaseSubscription($plan: SubscriptionPlan!, $receipt: String!) {
+    purchaseSubscription(plan: $plan, receipt: $receipt) {
+      success
+      message
+      user {
+        ...UserFragment
+      }
+    }
+  }
+`;
+
+export const CANCEL_SUBSCRIPTION_MUTATION = gql`
+  ${USER_FRAGMENT}
+  mutation CancelSubscription {
+    cancelSubscription {
+      success
+      message
+      user {
+        ...UserFragment
+      }
+    }
+  }
+`;
+
+export const RESTORE_PURCHASES_MUTATION = gql`
+  ${USER_FRAGMENT}
+  mutation RestorePurchases($receipt: String!) {
+    restorePurchases(receipt: $receipt) {
+      success
+      message
+      user {
+        ...UserFragment
       }
     }
   }

@@ -56,6 +56,12 @@
     "subscribeNow": "Nu abonneren",
     "terms": "Op elk moment opzegbaar. Voorwaarden zijn van toepassing.",
     "mostPopular": "Meest populair",
+    "purchaseSuccess": "Welkom bij Campy Plus!",
+    "purchaseError": "Aankoop mislukt",
+    "alreadySubscribed": "Je bent een Campy Plus-lid!",
+    "thankYou": "Bedankt dat je een Campy Plus-abonnee bent. Geniet van alle premium functies!",
+    "currentPlan": "Huidig abonnement",
+    "validUntil": "Geldig tot",
     "plans": {
       "monthly": "Maandelijks",
       "yearly": "Jaarlijks",

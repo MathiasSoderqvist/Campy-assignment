@@ -56,6 +56,12 @@
     "subscribeNow": "Jetzt abonnieren",
     "terms": "Jederzeit kündbar. Es gelten die AGB.",
     "mostPopular": "Am beliebtesten",
+    "purchaseSuccess": "Willkommen bei Campy Plus!",
+    "purchaseError": "Kauf fehlgeschlagen",
+    "alreadySubscribed": "Du bist Campy Plus-Mitglied!",
+    "thankYou": "Vielen Dank, dass du Campy Plus-Abonnent bist. Genieße alle Premium-Funktionen!",
+    "currentPlan": "Aktueller Plan",
+    "validUntil": "Gültig bis",
     "plans": {
       "monthly": "Monatlich",
       "yearly": "Jährlich",

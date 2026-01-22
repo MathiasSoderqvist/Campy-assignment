@@ -1,3 +1,50 @@
+// Types for subscriptions
+type SubscriptionPlan = "MONTHLY" | "YEARLY" | "LIFETIME";
+type SubscriptionStatus = "ACTIVE" | "CANCELLED" | "EXPIRED" | "NONE";
+
+interface Subscription {
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  startDate: string;
+  endDate: string | null;
+  autoRenew: boolean;
+  transactionId: string;
+}
+
+interface User {
+  uid: string;
+  email: string;
+  password: string;
+  displayName: string;
+  isCampyPlus: boolean;
+  subscription: Subscription | null;
+}
+
+// Mock user database (in-memory for demo)
+const users: Map<string, User> = new Map();
+
+// Helper to calculate subscription end date
+function calculateEndDate(plan: SubscriptionPlan, startDate: Date): string | null {
+  if (plan === "LIFETIME") return null;
+
+  const endDate = new Date(startDate);
+  if (plan === "MONTHLY") {
+    endDate.setMonth(endDate.getMonth() + 1);
+  } else if (plan === "YEARLY") {
+    endDate.setFullYear(endDate.getFullYear() + 1);
+  }
+  return endDate.toISOString();
+}
+
+// Helper to check if subscription is active
+function isSubscriptionActive(subscription: Subscription | null): boolean {
+  if (!subscription) return false;
+  if (subscription.status !== "ACTIVE") return false;
+  if (subscription.plan === "LIFETIME") return true;
+  if (subscription.endDate && new Date(subscription.endDate) < new Date()) return false;
+  return true;
+}
+
 const mockLocations = [
   {
     uid: "1",
@@ -108,13 +155,32 @@ function calculateDistance(
   return R * c;
 }
 
-// Mock user for authentication
-const mockUser = {
+// Initialize mock user
+const mockUser: User = {
   uid: "user-123",
   email: "test@campy.app",
   password: "campy",
   displayName: "Test User",
+  isCampyPlus: false,
+  subscription: null,
 };
+
+// Add mock user to database
+users.set(mockUser.uid, mockUser);
+
+// Simulated current user (would normally come from JWT token)
+let currentUserId: string | null = null;
+
+// Helper to get user response object (without password)
+function getUserResponse(user: User) {
+  return {
+    uid: user.uid,
+    email: user.email,
+    displayName: user.displayName,
+    isCampyPlus: isSubscriptionActive(user.subscription),
+    subscription: user.subscription,
+  };
+}
 
 export const resolvers = {
   Query: {
@@ -137,6 +203,16 @@ export const resolvers = {
         return distance <= radiusKm;
       });
     },
+    me: () => {
+      if (!currentUserId) {
+        throw new Error("Not authenticated");
+      }
+      const user = users.get(currentUserId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+      return getUserResponse(user);
+    },
   },
   Mutation: {
     login: (
@@ -144,16 +220,143 @@ export const resolvers = {
       { email, password }: { email: string; password: string }
     ) => {
       if (email === mockUser.email && password === mockUser.password) {
+        // Set current user for session
+        currentUserId = mockUser.uid;
+        const user = users.get(mockUser.uid)!;
         return {
           token: "mock-jwt-token-" + Date.now(),
-          user: {
-            uid: mockUser.uid,
-            email: mockUser.email,
-            displayName: mockUser.displayName,
-          },
+          user: getUserResponse(user),
         };
       }
       throw new Error("Invalid email or password");
+    },
+
+    purchaseSubscription: (
+      _: unknown,
+      { plan, receipt }: { plan: SubscriptionPlan; receipt: string }
+    ) => {
+      if (!currentUserId) {
+        throw new Error("Not authenticated");
+      }
+
+      const user = users.get(currentUserId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Validate receipt (mock validation - in production, verify with App Store/Play Store)
+      if (!receipt || receipt.length < 10) {
+        return {
+          success: false,
+          user: getUserResponse(user),
+          message: "Invalid purchase receipt",
+        };
+      }
+
+      // Create subscription
+      const startDate = new Date();
+      const subscription: Subscription = {
+        plan,
+        status: "ACTIVE",
+        startDate: startDate.toISOString(),
+        endDate: calculateEndDate(plan, startDate),
+        autoRenew: plan !== "LIFETIME",
+        transactionId: `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      };
+
+      // Update user
+      user.subscription = subscription;
+      user.isCampyPlus = true;
+      users.set(currentUserId, user);
+
+      return {
+        success: true,
+        user: getUserResponse(user),
+        message: `Successfully subscribed to Campy Plus (${plan.toLowerCase()})`,
+      };
+    },
+
+    cancelSubscription: () => {
+      if (!currentUserId) {
+        throw new Error("Not authenticated");
+      }
+
+      const user = users.get(currentUserId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      if (!user.subscription || user.subscription.status !== "ACTIVE") {
+        return {
+          success: false,
+          user: getUserResponse(user),
+          message: "No active subscription to cancel",
+        };
+      }
+
+      // Cancel subscription (keeps active until end date for non-lifetime)
+      user.subscription.status = "CANCELLED";
+      user.subscription.autoRenew = false;
+
+      // For lifetime, immediately revoke
+      if (user.subscription.plan === "LIFETIME") {
+        user.subscription.status = "EXPIRED";
+        user.isCampyPlus = false;
+      }
+
+      users.set(currentUserId, user);
+
+      return {
+        success: true,
+        user: getUserResponse(user),
+        message: user.subscription.plan === "LIFETIME"
+          ? "Lifetime subscription has been cancelled"
+          : "Subscription cancelled. Access continues until the end of the billing period.",
+      };
+    },
+
+    restorePurchases: (
+      _: unknown,
+      { receipt }: { receipt: string }
+    ) => {
+      if (!currentUserId) {
+        throw new Error("Not authenticated");
+      }
+
+      const user = users.get(currentUserId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Mock restore logic - in production, verify receipt with App Store/Play Store
+      // and restore any valid purchases
+      if (!receipt || receipt.length < 10) {
+        return {
+          success: false,
+          user: getUserResponse(user),
+          message: "Invalid receipt for restoration",
+        };
+      }
+
+      // For demo: if user had a cancelled subscription, restore it
+      if (user.subscription && user.subscription.status === "CANCELLED") {
+        user.subscription.status = "ACTIVE";
+        user.subscription.autoRenew = user.subscription.plan !== "LIFETIME";
+        user.isCampyPlus = true;
+        users.set(currentUserId, user);
+
+        return {
+          success: true,
+          user: getUserResponse(user),
+          message: "Previous subscription restored successfully",
+        };
+      }
+
+      return {
+        success: false,
+        user: getUserResponse(user),
+        message: "No previous purchases found to restore",
+      };
     },
   },
 };

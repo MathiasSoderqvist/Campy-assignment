@@ -1,21 +1,56 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useMutation } from '@apollo/client/react';
 
 import Firebase from '@/api/Firebase';
+import { CANCEL_SUBSCRIPTION_MUTATION } from '@/api/graphql_queries';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { languageNames, supportedLanguages, type SupportedLanguage } from '@/lang';
-import { useAuthStore } from '@/stores/authStore';
+import { useAuthStore, User } from '@/stores/authStore';
 import { LoginForm } from './LoginScreen';
+
+type CancelSubscriptionData = {
+  cancelSubscription: {
+    success: boolean;
+    message: string;
+    user: User;
+  };
+};
 
 export function ProfileScreen() {
   const { t, i18n } = useTranslation();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { isAuthenticated, user, logout } = useAuthStore();
+  const { isAuthenticated, user, logout, updateUser } = useAuthStore();
+
+  const [cancelSubscription, { loading: cancelLoading }] = useMutation<CancelSubscriptionData>(CANCEL_SUBSCRIPTION_MUTATION, {
+    onCompleted: (data: CancelSubscriptionData) => {
+      if (data.cancelSubscription.success) {
+        updateUser(data.cancelSubscription.user);
+        Alert.alert('Success', data.cancelSubscription.message || 'Subscription cancelled');
+      } else {
+        Alert.alert('Error', data.cancelSubscription.message || 'Failed to cancel subscription');
+      }
+    },
+    onError: (error: Error) => {
+      Alert.alert('Error', error.message);
+    },
+  });
+
+  const handleCancelSubscription = () => {
+    Alert.alert(
+      'Cancel Subscription',
+      'Are you sure you want to cancel your subscription?',
+      [
+        { text: 'No', style: 'cancel' },
+        { text: 'Yes, Cancel', style: 'destructive', onPress: () => cancelSubscription() },
+      ]
+    );
+  };
 
   const handleLogout = () => {
     logout();
@@ -76,6 +111,18 @@ export function ProfileScreen() {
             {t('common.signOut')}
           </ThemedText>
         </TouchableOpacity>
+
+        {user?.isCampyPlus && (
+          <TouchableOpacity
+            style={[styles.cancelButton, { borderColor: '#ff4444' }]}
+            onPress={handleCancelSubscription}
+            disabled={cancelLoading}
+          >
+            <ThemedText style={[styles.cancelText, { color: '#ff4444' }]}>
+              {'<debug> Cancel Subscription'}
+            </ThemedText>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </ThemedView>
   );
@@ -133,6 +180,17 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: 16,
+    fontWeight: '600',
+  },
+  cancelButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  cancelText: {
+    fontSize: 14,
     fontWeight: '600',
   },
 });

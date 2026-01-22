@@ -24,7 +24,7 @@ export function CampyPlusScreen() {
         <View style={styles.placeholder} />
       </View>
 
-      <CampyPlusContent />
+      <CampyPlusContent onPurchaseSuccess={handleClose} />
     </View>
   );
 }

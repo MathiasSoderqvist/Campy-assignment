@@ -94,7 +94,7 @@ export function HomeScreen() {
             myLocationButtonEnabled: true,
           }}
           markers={markers}
-          onMarkerClick={(event) => handleMarkerPress(event.id)}
+          onMarkerClick={(event) => event.id && handleMarkerPress(event.id)}
         />
       ) : (
         <GoogleMaps.View
@@ -107,7 +107,7 @@ export function HomeScreen() {
             myLocationButtonEnabled: true,
           }}
           markers={markers}
-          onMarkerClick={(event) => handleMarkerPress(event.id)}
+          onMarkerClick={(event) => event.id && handleMarkerPress(event.id)}
         />
       )}
       <Pressable
