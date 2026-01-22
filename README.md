@@ -1,135 +1,179 @@
-# Turborepo starter
+# Campy
 
-This Turborepo starter is maintained by the Turborepo core team.
+A multi-platform camping discovery and trip planning application with a React Native mobile app and GraphQL API.
 
-## Using this example
+## Overview
 
-Run the following command:
+Campy helps users discover camping locations, plan trips, and manage their favorite spots. The app features an interactive map interface, user authentication, internationalization support, and Firebase integration for analytics and performance monitoring.
 
-```sh
-npx create-turbo@latest
+## Architecture
+
+This project is organized as a **Turborepo monorepo** with the following structure:
+
+```
+campy-assignment/
+├── apps/
+│   ├── api/                    # GraphQL API server (Apollo Server)
+│   └── mobile/                 # React Native mobile app (Expo)
+├── packages/
+│   ├── eslint-config/          # Shared ESLint configuration
+│   └── typescript-config/      # Shared TypeScript configuration
+├── pnpm-workspace.yaml
+├── turbo.json
+└── package.json
 ```
 
-## What's inside?
+## Tech Stack
 
-This Turborepo includes the following packages/apps:
+### API
+- **Apollo Server 4** - GraphQL server
+- **GraphQL** - Query language
+- **TypeScript** - Type safety
 
-### Apps and Packages
+### Mobile App
+- **React Native 0.81** - Cross-platform mobile framework
+- **Expo 54** - Development platform
+- **Apollo Client** - GraphQL client
+- **React Navigation 7** - Navigation framework
+- **Zustand** - State management with persistence
+- **Firebase** - Analytics, Authentication, Performance, Remote Config
+- **i18next** - Internationalization (6 languages)
+- **expo-maps** - Native maps (Apple Maps on iOS, Google Maps on Android)
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+### Development Tools
+- **Turborepo** - Monorepo build system
+- **pnpm** - Package manager
+- **TypeScript 5.9** - Static type checking
+- **ESLint** - Code linting
+- **Prettier** - Code formatting
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## Prerequisites
 
-### Utilities
+- Node.js >= 18
+- pnpm 9.0.0
+- iOS development: Xcode, CocoaPods
+- Android development: Android Studio, JDK
 
-This Turborepo has some additional tools already setup for you:
+## Getting Started
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+### Installation
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd campy-assignment
+
+# Install dependencies
+pnpm install
+```
+
+### Development
+
+```bash
+# Run all apps in development mode
+pnpm dev
+
+# Or run specific apps
+pnpm dev --filter=@campy/api      # GraphQL server on http://localhost:4000
+pnpm dev --filter=mobile          # Expo development server
+```
 
 ### Build
 
-To build all apps and packages, run the following command:
+```bash
+# Build all apps
+pnpm build
 
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+# Build specific app
+pnpm build --filter=@campy/api
+pnpm build --filter=mobile
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### Linting & Type Checking
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```bash
+pnpm lint          # Run ESLint
+pnpm check-types   # Run TypeScript type checking
+pnpm format        # Format code with Prettier
 ```
 
-### Develop
+## Apps
 
-To develop all apps and packages, run the following command:
+### API (`apps/api`)
 
-```
-cd my-turborepo
+GraphQL backend server providing:
+- Location search with proximity filtering (Haversine distance)
+- User authentication
+- Mock data for 8 camping locations in the Amsterdam area
 
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+**Test Credentials:**
+- Email: `test@campy.app`
+- Password: `campy`
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
+See [apps/api/README.md](apps/api/README.md) for detailed API documentation.
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+### Mobile (`apps/mobile`)
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
+React Native mobile application featuring:
+- Interactive map with camping locations
+- User authentication with Firebase
+- Favorites management with persistence
+- Onboarding flow with vehicle selection
+- Multi-language support (EN, NL, DE, IT, FR, ES)
+- Dark/Light theme support
+- Premium subscription screens (Campy Plus)
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
+See [apps/mobile/README.md](apps/mobile/README.md) for detailed mobile documentation.
 
-### Remote Caching
+## Key Features
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+### Location Discovery
+- Interactive map view with location markers
+- Proximity-based search
+- Detailed location information with ratings and reviews
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+### User Management
+- Firebase Authentication integration
+- Persistent login state
+- User profile management
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+### Favorites
+- Save favorite camping locations
+- Persistent storage across sessions
+- Quick access from dedicated screen
 
-```
-cd my-turborepo
+### Internationalization
+- 6 languages: English, Dutch, German, Italian, French, Spanish
+- Automatic device language detection
+- In-app language switching
 
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
+### Analytics & Monitoring
+- Firebase Analytics event tracking
+- Performance monitoring with custom traces
+- Remote configuration support
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
+## Project Scripts
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start all apps in development mode |
+| `pnpm build` | Build all apps |
+| `pnpm lint` | Run ESLint across all packages |
+| `pnpm check-types` | Run TypeScript type checking |
+| `pnpm format` | Format code with Prettier |
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+## GraphQL API
 
-```
-# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
+The API exposes the following operations:
 
-# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
+### Queries
+- `locationsNearby(latitude, longitude, radiusKm)` - Fetch nearby camping locations
 
-## Useful Links
+### Mutations
+- `login(email, password)` - Authenticate user and receive token
 
-Learn more about the power of Turborepo:
+See [graphql.md](graphql.md) for complete schema documentation.
 
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+## License
+
+Private - All rights reserved.
