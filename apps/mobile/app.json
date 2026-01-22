@@ -10,9 +10,11 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.example.mobile"
+      "bundleIdentifier": "app.campy.assignment",
+      "googleServicesFile": "./config/GoogleService-Info.plist"
     },
     "android": {
+      "googleServicesFile": "./config/google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -45,7 +47,18 @@
           "launchMode": "most-recent"
         }
       ],
-      "expo-maps"
+      "expo-maps",
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "forceStaticLinking": ["RNFBApp", "RNFBAuth"]
+          }
+        }
+      ]
     ],
     "experiments": {
       "reactCompiler": true

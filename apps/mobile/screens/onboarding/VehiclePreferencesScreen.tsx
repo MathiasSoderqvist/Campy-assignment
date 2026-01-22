@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Pressable,
   StyleSheet,
@@ -12,15 +13,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RootStackParamList } from '../../navigation/types';
 import { useOnboardingStore, VehicleType } from '../../stores/onboardingStore';
 
-const VEHICLE_OPTIONS: { type: VehicleType; label: string; icon: string }[] = [
-  { type: 'motorhome', label: 'Motorhome', icon: '🚐' },
-  { type: 'rooftent', label: 'Rooftent', icon: '⛺' },
-  { type: 'bicycle', label: 'Bicycle', icon: '🚲' },
-  { type: 'car', label: 'Car', icon: '🚗' },
-  { type: 'van', label: 'Van', icon: '🚌' },
+const VEHICLE_OPTIONS: { type: VehicleType; labelKey: string; icon: string }[] = [
+  { type: 'motorhome', labelKey: 'vehiclePreferences.vehicles.motorhome', icon: '🚐' },
+  { type: 'rooftent', labelKey: 'vehiclePreferences.vehicles.rooftent', icon: '⛺' },
+  { type: 'bicycle', labelKey: 'vehiclePreferences.vehicles.bicycle', icon: '🚲' },
+  { type: 'car', labelKey: 'vehiclePreferences.vehicles.car', icon: '🚗' },
+  { type: 'van', labelKey: 'vehiclePreferences.vehicles.van', icon: '🚌' },
 ];
 
 export function VehiclePreferencesScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const { vehicleType, setVehicleType } = useOnboardingStore();
@@ -38,14 +40,14 @@ export function VehiclePreferencesScreen() {
       <View style={styles.header}>
         <View style={styles.placeholder} />
         <Pressable onPress={handleSkip} style={styles.skipButton}>
-          <Text style={styles.skipText}>Skip</Text>
+          <Text style={styles.skipText}>{t('common.skip')}</Text>
         </Pressable>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>How do you travel?</Text>
+        <Text style={styles.title}>{t('vehiclePreferences.title')}</Text>
         <Text style={styles.subtitle}>
-          Select your preferred vehicle type
+          {t('vehiclePreferences.subtitle')}
         </Text>
 
         <View style={styles.optionsContainer}>
@@ -65,7 +67,7 @@ export function VehiclePreferencesScreen() {
                   vehicleType === option.type && styles.optionLabelSelected,
                 ]}
               >
-                {option.label}
+                {t(option.labelKey)}
               </Text>
             </Pressable>
           ))}
@@ -87,7 +89,7 @@ export function VehiclePreferencesScreen() {
               !vehicleType && styles.continueTextDisabled,
             ]}
           >
-            Continue
+            {t('common.continue')}
           </Text>
         </Pressable>
       </View>

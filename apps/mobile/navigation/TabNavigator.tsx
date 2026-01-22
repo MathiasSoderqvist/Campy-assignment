@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -14,6 +15,7 @@ import type { MainTabParamList } from './types';
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export function TabNavigator() {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
 
   return (
@@ -28,7 +30,7 @@ export function TabNavigator() {
         name="Home"
         component={HomeScreen}
         options={{
-          title: 'Home',
+          title: t('tabs.home'),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="house.fill" color={color} />
           ),
@@ -38,7 +40,7 @@ export function TabNavigator() {
         name="Trips"
         component={TripsScreen}
         options={{
-          title: 'Trips',
+          title: t('tabs.trips'),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="car.fill" color={color} />
           ),
@@ -48,7 +50,7 @@ export function TabNavigator() {
         name="Favourites"
         component={FavouritesScreen}
         options={{
-          title: 'Favourites',
+          title: t('tabs.favourites'),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="heart.fill" color={color} />
           ),
@@ -58,7 +60,7 @@ export function TabNavigator() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          title: 'Profile',
+          title: t('tabs.profile'),
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="person.fill" color={color} />
           ),

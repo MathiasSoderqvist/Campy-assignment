@@ -22,3 +22,16 @@ export const FETCH_LOCATIONS_NEARBY = gql`
     }
   }
 `;
+
+export const LOGIN_MUTATION = gql`
+  mutation Login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
+      token
+      user {
+        uid
+        email
+        displayName
+      }
+    }
+  }
+`;

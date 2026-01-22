@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "776056824900",
+    "project_id": "campy-assignment-f3f3c",
+    "storage_bucket": "campy-assignment-f3f3c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:776056824900:android:e84a419cf4119b45f34811",
+        "android_client_info": {
+          "package_name": "app.campy.assignment"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqyGu9pxA7H-cG-2YXOVGdHuDN2lics84"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

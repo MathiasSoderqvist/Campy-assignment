@@ -1,0 +1,87 @@
+{
+  "common": {
+    "close": "Sluiten",
+    "skip": "Overslaan",
+    "continue": "Doorgaan",
+    "signIn": "Inloggen",
+    "signOut": "Uitloggen",
+    "error": "Fout",
+    "loading": "Laden..."
+  },
+  "tabs": {
+    "home": "Home",
+    "trips": "Reizen",
+    "favourites": "Favorieten",
+    "profile": "Profiel"
+  },
+  "home": {
+    "loadingLocations": "Locaties laden...",
+    "errorLoadingLocations": "Fout bij het laden van locaties"
+  },
+  "profile": {
+    "title": "Profiel",
+    "language": "Taal"
+  },
+  "favourites": {
+    "title": "Favorieten",
+    "saved": "{{count}} opgeslagen",
+    "noFavouritesTitle": "Nog geen favorieten",
+    "noFavouritesMessage": "Begin met verkennen en sla je favoriete kampeerplekken op!"
+  },
+  "login": {
+    "welcomeTitle": "Welkom bij Campy",
+    "welcomeSubtitle": "Log in om verder te gaan",
+    "emailPlaceholder": "E-mail",
+    "passwordPlaceholder": "Wachtwoord",
+    "validationError": "Vul e-mail en wachtwoord in",
+    "loginFailed": "Inloggen mislukt",
+    "hint": "Gebruik test@campy.app / campy"
+  },
+  "trips": {
+    "title": "Reizen",
+    "placeholder": "Je reizen verschijnen hier."
+  },
+  "locationDetails": {
+    "noImage": "Geen afbeelding",
+    "about": "Over",
+    "location": "Locatie",
+    "reviews": "beoordelingen",
+    "addToFavorites": "Toevoegen aan favorieten",
+    "removeFromFavorites": "Verwijderen uit favorieten"
+  },
+  "campyPlus": {
+    "title": "Campy Plus",
+    "description": "Ontgrendel de volledige kampeerervaring met Campy Plus. Krijg toegang tot exclusieve functies en maak je avonturen onvergetelijk.",
+    "choosePlan": "Kies je abonnement",
+    "subscribeNow": "Nu abonneren",
+    "terms": "Op elk moment opzegbaar. Voorwaarden zijn van toepassing.",
+    "mostPopular": "Meest populair",
+    "plans": {
+      "monthly": "Maandelijks",
+      "yearly": "Jaarlijks",
+      "lifetime": "Levenslang",
+      "perMonth": "/maand",
+      "perYear": "/jaar",
+      "oneTime": "eenmalig"
+    },
+    "features": {
+      "unlimitedLocations": "Onbeperkt opgeslagen locaties",
+      "offlineMaps": "Offline kaarten voor alle regio's",
+      "adFree": "Advertentievrije ervaring",
+      "exclusiveCampsites": "Toegang tot exclusieve campings",
+      "prioritySupport": "Prioriteit klantenservice",
+      "earlyAccess": "Vroege toegang tot nieuwe functies"
+    }
+  },
+  "vehiclePreferences": {
+    "title": "Hoe reis je?",
+    "subtitle": "Selecteer je favoriete voertuigtype",
+    "vehicles": {
+      "motorhome": "Camper",
+      "rooftent": "Daktent",
+      "bicycle": "Fiets",
+      "car": "Auto",
+      "van": "Busje"
+    }
+  }
+}

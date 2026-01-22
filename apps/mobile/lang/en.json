@@ -1,0 +1,87 @@
+{
+  "common": {
+    "close": "Close",
+    "skip": "Skip",
+    "continue": "Continue",
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "error": "Error",
+    "loading": "Loading..."
+  },
+  "tabs": {
+    "home": "Home",
+    "trips": "Trips",
+    "favourites": "Favourites",
+    "profile": "Profile"
+  },
+  "home": {
+    "loadingLocations": "Loading locations...",
+    "errorLoadingLocations": "Error loading locations"
+  },
+  "profile": {
+    "title": "Profile",
+    "language": "Language"
+  },
+  "favourites": {
+    "title": "Favourites",
+    "saved": "{{count}} saved",
+    "noFavouritesTitle": "No favorites yet",
+    "noFavouritesMessage": "Start exploring and save your favorite camping spots!"
+  },
+  "login": {
+    "welcomeTitle": "Welcome to Campy",
+    "welcomeSubtitle": "Sign in to continue",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Password",
+    "validationError": "Please enter email and password",
+    "loginFailed": "Login Failed",
+    "hint": "Use test@campy.app / campy"
+  },
+  "trips": {
+    "title": "Trips",
+    "placeholder": "Your trips will appear here."
+  },
+  "locationDetails": {
+    "noImage": "No Image",
+    "about": "About",
+    "location": "Location",
+    "reviews": "reviews",
+    "addToFavorites": "Add to Favorites",
+    "removeFromFavorites": "Remove from Favorites"
+  },
+  "campyPlus": {
+    "title": "Campy Plus",
+    "description": "Unlock the full camping experience with Campy Plus. Get access to exclusive features and make your adventures unforgettable.",
+    "choosePlan": "Choose your plan",
+    "subscribeNow": "Subscribe Now",
+    "terms": "Cancel anytime. Terms and conditions apply.",
+    "mostPopular": "Most Popular",
+    "plans": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "lifetime": "Lifetime",
+      "perMonth": "/month",
+      "perYear": "/year",
+      "oneTime": "one-time"
+    },
+    "features": {
+      "unlimitedLocations": "Unlimited saved locations",
+      "offlineMaps": "Offline maps for all regions",
+      "adFree": "Ad-free experience",
+      "exclusiveCampsites": "Exclusive campsites access",
+      "prioritySupport": "Priority customer support",
+      "earlyAccess": "Early access to new features"
+    }
+  },
+  "vehiclePreferences": {
+    "title": "How do you travel?",
+    "subtitle": "Select your preferred vehicle type",
+    "vehicles": {
+      "motorhome": "Motorhome",
+      "rooftent": "Rooftent",
+      "bicycle": "Bicycle",
+      "car": "Car",
+      "van": "Van"
+    }
+  }
+}

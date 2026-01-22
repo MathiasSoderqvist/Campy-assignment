@@ -1,0 +1,87 @@
+{
+  "common": {
+    "close": "Chiudi",
+    "skip": "Salta",
+    "continue": "Continua",
+    "signIn": "Accedi",
+    "signOut": "Esci",
+    "error": "Errore",
+    "loading": "Caricamento..."
+  },
+  "tabs": {
+    "home": "Home",
+    "trips": "Viaggi",
+    "favourites": "Preferiti",
+    "profile": "Profilo"
+  },
+  "home": {
+    "loadingLocations": "Caricamento località...",
+    "errorLoadingLocations": "Errore nel caricamento delle località"
+  },
+  "profile": {
+    "title": "Profilo",
+    "language": "Lingua"
+  },
+  "favourites": {
+    "title": "Preferiti",
+    "saved": "{{count}} salvati",
+    "noFavouritesTitle": "Nessun preferito",
+    "noFavouritesMessage": "Inizia ad esplorare e salva i tuoi campeggi preferiti!"
+  },
+  "login": {
+    "welcomeTitle": "Benvenuto su Campy",
+    "welcomeSubtitle": "Accedi per continuare",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Password",
+    "validationError": "Inserisci email e password",
+    "loginFailed": "Accesso fallito",
+    "hint": "Usa test@campy.app / campy"
+  },
+  "trips": {
+    "title": "Viaggi",
+    "placeholder": "I tuoi viaggi appariranno qui."
+  },
+  "locationDetails": {
+    "noImage": "Nessuna immagine",
+    "about": "Info",
+    "location": "Posizione",
+    "reviews": "recensioni",
+    "addToFavorites": "Aggiungi ai preferiti",
+    "removeFromFavorites": "Rimuovi dai preferiti"
+  },
+  "campyPlus": {
+    "title": "Campy Plus",
+    "description": "Sblocca l'esperienza campeggio completa con Campy Plus. Ottieni accesso a funzionalità esclusive e rendi le tue avventure indimenticabili.",
+    "choosePlan": "Scegli il tuo piano",
+    "subscribeNow": "Abbonati ora",
+    "terms": "Cancella quando vuoi. Si applicano termini e condizioni.",
+    "mostPopular": "Più popolare",
+    "plans": {
+      "monthly": "Mensile",
+      "yearly": "Annuale",
+      "lifetime": "A vita",
+      "perMonth": "/mese",
+      "perYear": "/anno",
+      "oneTime": "una tantum"
+    },
+    "features": {
+      "unlimitedLocations": "Località salvate illimitate",
+      "offlineMaps": "Mappe offline per tutte le regioni",
+      "adFree": "Esperienza senza pubblicità",
+      "exclusiveCampsites": "Accesso a campeggi esclusivi",
+      "prioritySupport": "Supporto clienti prioritario",
+      "earlyAccess": "Accesso anticipato alle nuove funzionalità"
+    }
+  },
+  "vehiclePreferences": {
+    "title": "Come viaggi?",
+    "subtitle": "Seleziona il tuo tipo di veicolo preferito",
+    "vehicles": {
+      "motorhome": "Camper",
+      "rooftent": "Tenda da tetto",
+      "bicycle": "Bicicletta",
+      "car": "Auto",
+      "van": "Van"
+    }
+  }
+}

@@ -11,8 +11,23 @@ export const typeDefs = `#graphql
     reviewCount: Int
   }
 
+  type User {
+    uid: ID!
+    email: String!
+    displayName: String
+  }
+
+  type AuthPayload {
+    token: String!
+    user: User!
+  }
+
   type Query {
     hello: String
     locationsNearby(latitude: Float!, longitude: Float!, radiusKm: Float): [Location!]!
+  }
+
+  type Mutation {
+    login(email: String!, password: String!): AuthPayload!
   }
 `;

@@ -108,6 +108,14 @@ function calculateDistance(
   return R * c;
 }
 
+// Mock user for authentication
+const mockUser = {
+  uid: "user-123",
+  email: "test@campy.app",
+  password: "campy",
+  displayName: "Test User",
+};
+
 export const resolvers = {
   Query: {
     hello: () => "Hello from GraphQL!",
@@ -128,6 +136,24 @@ export const resolvers = {
         );
         return distance <= radiusKm;
       });
+    },
+  },
+  Mutation: {
+    login: (
+      _: unknown,
+      { email, password }: { email: string; password: string }
+    ) => {
+      if (email === mockUser.email && password === mockUser.password) {
+        return {
+          token: "mock-jwt-token-" + Date.now(),
+          user: {
+            uid: mockUser.uid,
+            email: mockUser.email,
+            displayName: mockUser.displayName,
+          },
+        };
+      }
+      throw new Error("Invalid email or password");
     },
   },
 };

@@ -1,35 +1,27 @@
 import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { CampyPlusContent } from '../../components/CampyPlusContent';
-import type { RootStackParamList } from '../../navigation/types';
-import { useOnboardingStore } from '../../stores/onboardingStore';
+import { CampyPlusContent } from '../components/CampyPlusContent';
 
 export function CampyPlusScreen() {
   const { t } = useTranslation();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { completeOnboarding } = useOnboardingStore();
 
-  const handleSkip = () => {
-    completeOnboarding();
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Main' }],
-    });
+  const handleClose = () => {
+    navigation.goBack();
   };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <View style={styles.placeholder} />
-        <Pressable onPress={handleSkip} style={styles.skipButton}>
-          <Text style={styles.skipText}>{t('common.skip')}</Text>
+        <Pressable onPress={handleClose} style={styles.closeButton}>
+          <Text style={styles.closeText}>{t('common.close')}</Text>
         </Pressable>
+        <View style={styles.placeholder} />
       </View>
 
       <CampyPlusContent />
@@ -52,10 +44,10 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 50,
   },
-  skipButton: {
+  closeButton: {
     padding: 8,
   },
-  skipText: {
+  closeText: {
     fontSize: 16,
     color: '#687076',
   },

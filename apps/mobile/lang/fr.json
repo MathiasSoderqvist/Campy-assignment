@@ -1,0 +1,87 @@
+{
+  "common": {
+    "close": "Fermer",
+    "skip": "Passer",
+    "continue": "Continuer",
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "error": "Erreur",
+    "loading": "Chargement..."
+  },
+  "tabs": {
+    "home": "Accueil",
+    "trips": "Voyages",
+    "favourites": "Favoris",
+    "profile": "Profil"
+  },
+  "home": {
+    "loadingLocations": "Chargement des emplacements...",
+    "errorLoadingLocations": "Erreur lors du chargement des emplacements"
+  },
+  "profile": {
+    "title": "Profil",
+    "language": "Langue"
+  },
+  "favourites": {
+    "title": "Favoris",
+    "saved": "{{count}} enregistrés",
+    "noFavouritesTitle": "Pas encore de favoris",
+    "noFavouritesMessage": "Commencez à explorer et enregistrez vos emplacements de camping préférés!"
+  },
+  "login": {
+    "welcomeTitle": "Bienvenue sur Campy",
+    "welcomeSubtitle": "Connectez-vous pour continuer",
+    "emailPlaceholder": "E-mail",
+    "passwordPlaceholder": "Mot de passe",
+    "validationError": "Veuillez entrer l'e-mail et le mot de passe",
+    "loginFailed": "Échec de la connexion",
+    "hint": "Utilisez test@campy.app / campy"
+  },
+  "trips": {
+    "title": "Voyages",
+    "placeholder": "Vos voyages apparaîtront ici."
+  },
+  "locationDetails": {
+    "noImage": "Pas d'image",
+    "about": "À propos",
+    "location": "Emplacement",
+    "reviews": "avis",
+    "addToFavorites": "Ajouter aux favoris",
+    "removeFromFavorites": "Retirer des favoris"
+  },
+  "campyPlus": {
+    "title": "Campy Plus",
+    "description": "Débloquez l'expérience camping complète avec Campy Plus. Accédez à des fonctionnalités exclusives et rendez vos aventures inoubliables.",
+    "choosePlan": "Choisissez votre forfait",
+    "subscribeNow": "S'abonner maintenant",
+    "terms": "Annulation à tout moment. Conditions générales applicables.",
+    "mostPopular": "Le plus populaire",
+    "plans": {
+      "monthly": "Mensuel",
+      "yearly": "Annuel",
+      "lifetime": "À vie",
+      "perMonth": "/mois",
+      "perYear": "/an",
+      "oneTime": "unique"
+    },
+    "features": {
+      "unlimitedLocations": "Emplacements enregistrés illimités",
+      "offlineMaps": "Cartes hors ligne pour toutes les régions",
+      "adFree": "Expérience sans publicité",
+      "exclusiveCampsites": "Accès aux campings exclusifs",
+      "prioritySupport": "Support client prioritaire",
+      "earlyAccess": "Accès anticipé aux nouvelles fonctionnalités"
+    }
+  },
+  "vehiclePreferences": {
+    "title": "Comment voyagez-vous?",
+    "subtitle": "Sélectionnez votre type de véhicule préféré",
+    "vehicles": {
+      "motorhome": "Camping-car",
+      "rooftent": "Tente de toit",
+      "bicycle": "Vélo",
+      "car": "Voiture",
+      "van": "Fourgon"
+    }
+  }
+}

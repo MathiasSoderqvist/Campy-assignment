@@ -1,8 +1,10 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 
+import { CampyPlusScreen } from '../screens/CampyPlusScreen';
+import { LocationDetailsScreen } from '../screens/LocationDetailsScreen';
 import {
-  CampyPlusScreen,
+  CampyPlusScreen as CampyPlusOnboardingScreen,
   VehiclePreferencesScreen,
 } from '../screens/onboarding';
 import { useOnboardingStore } from '../stores/onboardingStore';
@@ -24,10 +26,20 @@ export function RootNavigator() {
             name="VehiclePreferences"
             component={VehiclePreferencesScreen}
           />
-          <Stack.Screen name="CampyPlus" component={CampyPlusScreen} />
+          <Stack.Screen name="CampyPlus" component={CampyPlusOnboardingScreen} />
         </>
       ) : null}
       <Stack.Screen name="Main" component={TabNavigator} />
+      <Stack.Screen
+        name="CampyPlusModal"
+        component={CampyPlusScreen}
+        options={{ presentation: 'modal' }}
+      />
+      <Stack.Screen
+        name="LocationDetails"
+        component={LocationDetailsScreen}
+        options={{ presentation: 'modal' }}
+      />
     </Stack.Navigator>
   );
 }
