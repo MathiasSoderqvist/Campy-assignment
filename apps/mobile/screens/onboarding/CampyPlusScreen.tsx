@@ -1,10 +1,11 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import Analytics from '../../api/Analytics';
 import { CampyPlusContent } from '../../components/CampyPlusContent';
 import type { RootStackParamList } from '../../navigation/types';
 import { useOnboardingStore } from '../../stores/onboardingStore';
@@ -13,9 +14,27 @@ export function CampyPlusScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { completeOnboarding } = useOnboardingStore();
+  const { completeOnboarding, vehicleType } = useOnboardingStore();
+
+  // Track onboarding step view
+  useEffect(() => {
+    Analytics.trackOnboardingStepView('campy_plus', 2, 2);
+    Analytics.trackSubscriptionView('onboarding');
+  }, []);
 
   const handleSkip = () => {
+    Analytics.trackOnboardingSkip('campy_plus', 2);
+    Analytics.trackOnboardingComplete(vehicleType ?? undefined);
+    completeOnboarding();
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Main' }],
+    });
+  };
+
+  const handlePurchaseSuccess = () => {
+    Analytics.trackOnboardingStepComplete('campy_plus', 2);
+    Analytics.trackOnboardingComplete(vehicleType ?? undefined);
     completeOnboarding();
     navigation.reset({
       index: 0,
@@ -32,7 +51,7 @@ export function CampyPlusScreen() {
         </Pressable>
       </View>
 
-      <CampyPlusContent />
+      <CampyPlusContent onPurchaseSuccess={handlePurchaseSuccess} />
     </View>
   );
 }

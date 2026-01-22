@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 
+import Analytics from '@/api/Analytics';
 import Firebase from '@/api/Firebase';
 import { LOGIN_MUTATION } from '@/api/graphql_queries';
 import { ThemedText } from '@/components/themed-text';
@@ -37,11 +38,14 @@ export function LoginForm() {
       const { token, user } = data.login;
       setUser(user, token);
       Firebase.setUser({ uid: user.uid, email: user.email });
-      Firebase.track('login', { method: 'email' });
+      Analytics.trackLogin('email');
+      Analytics.setUserProperties({
+        is_premium: user.isCampyPlus,
+      });
     },
     onError: (error) => {
       Alert.alert(t('login.loginFailed'), error.message);
-      Firebase.track('login_failed', { error: error.message });
+      Analytics.trackLoginFailed(error.message, 'email');
     },
   });
 

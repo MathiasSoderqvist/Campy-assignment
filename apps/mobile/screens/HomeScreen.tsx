@@ -2,11 +2,12 @@ import { useQuery } from '@apollo/client/react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AppleMaps, GoogleMaps } from 'expo-maps';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import Analytics from '../api/Analytics';
 import { FETCH_LOCATIONS_NEARBY } from '../api/graphql_queries';
 import type { RootStackParamList } from '../navigation/types';
 import type { Location } from '../types/location';
@@ -32,13 +33,36 @@ export function HomeScreen() {
   );
 
   const handlePlusPress = () => {
+    Analytics.trackSubscriptionView('home');
     navigation.navigate('CampyPlusModal');
   };
+
+  // Track map loaded with locations count
+  useEffect(() => {
+    if (data?.locations && !loading) {
+      Analytics.trackMapLoaded(data.locations.length);
+      Analytics.trackSearchResults(data.locations.length);
+    }
+  }, [data?.locations, loading]);
+
+  // Track API errors
+  useEffect(() => {
+    if (error) {
+      Analytics.trackErrorDisplayed('api_error', error.message, 'HomeScreen');
+    }
+  }, [error]);
 
   const handleMarkerPress = useCallback(
     (markerId: string) => {
       const location = data?.locations.find((loc) => loc.uid === markerId);
       if (location) {
+        Analytics.trackMapMarkerClick({
+          location_id: location.uid,
+          location_name: location.title,
+          location_rating: location.rating,
+          location_latitude: location.latitude,
+          location_longitude: location.longitude,
+        });
         navigation.navigate('LocationDetails', { location });
       }
     },

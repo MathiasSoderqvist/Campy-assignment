@@ -1,10 +1,11 @@
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import Analytics from '../api/Analytics';
 import type { RootStackParamList } from '../navigation/types';
 import { useFavoritesStore } from '../stores/favoritesStore';
 import type { Location } from '../types/location';
@@ -15,8 +16,25 @@ export function FavouritesScreen() {
   const insets = useSafeAreaInsets();
   const { favorites, removeFavorite } = useFavoritesStore();
 
+  // Track favorites view when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      Analytics.trackFavoritesView(favorites.length);
+    }, [favorites.length])
+  );
+
   const handleLocationPress = (location: Location) => {
+    Analytics.trackLocationView({
+      location_id: location.uid,
+      location_name: location.title,
+      location_rating: location.rating,
+    });
     navigation.navigate('LocationDetails', { location });
+  };
+
+  const handleRemoveFavorite = (location: Location) => {
+    Analytics.trackFavoriteRemove(location.uid, location.title);
+    removeFavorite(location.uid);
   };
 
   const renderItem = ({ item }: { item: Location }) => (
@@ -37,7 +55,7 @@ export function FavouritesScreen() {
       </View>
       <Pressable
         style={styles.removeButton}
-        onPress={() => removeFavorite(item.uid)}
+        onPress={() => handleRemoveFavorite(item)}
         hitSlop={8}
       >
         <Text style={styles.removeIcon}>♥</Text>

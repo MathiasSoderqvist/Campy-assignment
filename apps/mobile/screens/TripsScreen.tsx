@@ -1,12 +1,21 @@
-import React from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 
+import Analytics from '@/api/Analytics';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
 export function TripsScreen() {
   const { t } = useTranslation();
+
+  // Track trips screen view
+  useFocusEffect(
+    useCallback(() => {
+      Analytics.track('trips_view', { trips_count: 0 });
+    }, [])
+  );
 
   return (
     <ThemedView style={styles.container}>

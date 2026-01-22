@@ -1,8 +1,9 @@
 import { useMutation } from '@apollo/client/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import Analytics from '../api/Analytics';
 import { PURCHASE_SUBSCRIPTION_MUTATION } from '../api/graphql_queries';
 import { SubscriptionPlan as SubscriptionPlanType, useAuthStore, User } from '../stores/authStore';
 
@@ -51,6 +52,12 @@ export function CampyPlusContent({ onPurchaseSuccess }: CampyPlusContentProps) {
   const [purchaseSubscription, { loading }] = useMutation<PurchaseSubscriptionData>(PURCHASE_SUBSCRIPTION_MUTATION, {
     onCompleted: (data: PurchaseSubscriptionData) => {
       if (data.purchaseSubscription.success) {
+        const plan = SUBSCRIPTION_PLANS.find((p) => p.id === selectedPlan);
+        Analytics.trackSubscriptionPurchaseSuccess({
+          plan_id: selectedPlan,
+          plan_type: plan?.planType ?? 'MONTHLY',
+          price: plan?.price,
+        });
         updateUser(data.purchaseSubscription.user);
         Alert.alert(
           t('campyPlus.purchaseSuccess'),
@@ -58,17 +65,37 @@ export function CampyPlusContent({ onPurchaseSuccess }: CampyPlusContentProps) {
           [{ text: 'OK', onPress: onPurchaseSuccess }]
         );
       } else {
+        Analytics.trackSubscriptionPurchaseFailed(selectedPlan, data.purchaseSubscription.message);
         Alert.alert(t('campyPlus.purchaseError'), data.purchaseSubscription.message);
       }
     },
     onError: (error: Error) => {
+      Analytics.trackSubscriptionPurchaseFailed(selectedPlan, error.message);
       Alert.alert(t('campyPlus.purchaseError'), error.message);
     },
   });
 
+  const handlePlanSelect = (planId: string) => {
+    const plan = SUBSCRIPTION_PLANS.find((p) => p.id === planId);
+    if (plan) {
+      Analytics.trackSubscriptionPlanSelect({
+        plan_id: planId,
+        plan_type: plan.planType,
+        price: plan.price,
+      });
+    }
+    setSelectedPlan(planId);
+  };
+
   const handleSubscribe = async () => {
     const plan = SUBSCRIPTION_PLANS.find((p) => p.id === selectedPlan);
     if (!plan) return;
+
+    Analytics.trackSubscriptionPurchaseStart({
+      plan_id: selectedPlan,
+      plan_type: plan.planType,
+      price: plan.price,
+    });
 
     // In production, this would be the actual receipt from App Store/Play Store
     // For demo purposes, we use a mock receipt
@@ -143,7 +170,7 @@ export function CampyPlusContent({ onPurchaseSuccess }: CampyPlusContentProps) {
               styles.planCard,
               selectedPlan === plan.id && styles.planCardSelected,
             ]}
-            onPress={() => setSelectedPlan(plan.id)}
+            onPress={() => handlePlanSelect(plan.id)}
           >
             {plan.popular && (
               <View style={styles.popularBadge}>

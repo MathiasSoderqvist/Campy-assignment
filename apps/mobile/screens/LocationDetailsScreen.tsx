@@ -1,10 +1,11 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import Analytics from '../api/Analytics';
 import type { RootStackParamList } from '../navigation/types';
 import { useFavoritesStore } from '../stores/favoritesStore';
 
@@ -18,11 +19,31 @@ export function LocationDetailsScreen() {
   const { isFavorite, toggleFavorite } = useFavoritesStore();
   const isLocationFavorite = isFavorite(location.uid);
 
+  // Track location view on mount
+  useEffect(() => {
+    Analytics.trackLocationView({
+      location_id: location.uid,
+      location_name: location.title,
+      location_rating: location.rating,
+      location_latitude: location.latitude,
+      location_longitude: location.longitude,
+    });
+  }, [location]);
+
   const handleClose = () => {
     navigation.goBack();
   };
 
   const handleToggleFavorite = () => {
+    if (isLocationFavorite) {
+      Analytics.trackFavoriteRemove(location.uid, location.title);
+    } else {
+      Analytics.trackFavoriteAdd({
+        location_id: location.uid,
+        location_name: location.title,
+        location_rating: location.rating,
+      });
+    }
     toggleFavorite(location);
   };
 

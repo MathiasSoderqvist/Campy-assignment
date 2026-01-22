@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useMutation } from '@apollo/client/react';
 
+import Analytics from '@/api/Analytics';
 import Firebase from '@/api/Firebase';
 import { CANCEL_SUBSCRIPTION_MUTATION } from '@/api/graphql_queries';
 import { ThemedText } from '@/components/themed-text';
@@ -30,18 +31,22 @@ export function ProfileScreen() {
   const [cancelSubscription, { loading: cancelLoading }] = useMutation<CancelSubscriptionData>(CANCEL_SUBSCRIPTION_MUTATION, {
     onCompleted: (data: CancelSubscriptionData) => {
       if (data.cancelSubscription.success) {
+        Analytics.trackSubscriptionCancelSuccess();
         updateUser(data.cancelSubscription.user);
         Alert.alert('Success', data.cancelSubscription.message || 'Subscription cancelled');
       } else {
+        Analytics.trackSubscriptionCancelFailed(data.cancelSubscription.message || 'Unknown error');
         Alert.alert('Error', data.cancelSubscription.message || 'Failed to cancel subscription');
       }
     },
     onError: (error: Error) => {
+      Analytics.trackSubscriptionCancelFailed(error.message);
       Alert.alert('Error', error.message);
     },
   });
 
   const handleCancelSubscription = () => {
+    Analytics.trackSubscriptionCancelStart();
     Alert.alert(
       'Cancel Subscription',
       'Are you sure you want to cancel your subscription?',
@@ -53,13 +58,14 @@ export function ProfileScreen() {
   };
 
   const handleLogout = () => {
+    Analytics.trackLogout();
     logout();
-    Firebase.track('logout');
   };
 
   const handleLanguageChange = (lang: SupportedLanguage) => {
+    const previousLanguage = i18n.language;
     i18n.changeLanguage(lang);
-    Firebase.track('language_changed', { language: lang });
+    Analytics.trackLanguageChange(lang, previousLanguage);
   };
 
   if (!isAuthenticated) {

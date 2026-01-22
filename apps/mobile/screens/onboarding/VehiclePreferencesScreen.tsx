@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Pressable,
@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import Analytics from '../../api/Analytics';
 import type { RootStackParamList } from '../../navigation/types';
 import { useOnboardingStore, VehicleType } from '../../stores/onboardingStore';
 
@@ -27,11 +28,23 @@ export function VehiclePreferencesScreen() {
   const insets = useSafeAreaInsets();
   const { vehicleType, setVehicleType } = useOnboardingStore();
 
+  // Track onboarding step view
+  useEffect(() => {
+    Analytics.trackOnboardingStepView('vehicle_preferences', 1, 2);
+  }, []);
+
+  const handleVehicleSelect = (type: VehicleType) => {
+    Analytics.trackVehicleTypeSelect(type);
+    setVehicleType(type);
+  };
+
   const handleSkip = () => {
+    Analytics.trackOnboardingSkip('vehicle_preferences', 1);
     navigation.navigate('CampyPlus');
   };
 
   const handleContinue = () => {
+    Analytics.trackOnboardingStepComplete('vehicle_preferences', 1);
     navigation.navigate('CampyPlus');
   };
 
@@ -58,7 +71,7 @@ export function VehiclePreferencesScreen() {
                 styles.optionButton,
                 vehicleType === option.type && styles.optionButtonSelected,
               ]}
-              onPress={() => setVehicleType(option.type)}
+              onPress={() => handleVehicleSelect(option.type)}
             >
               <Text style={styles.optionIcon}>{option.icon}</Text>
               <Text
