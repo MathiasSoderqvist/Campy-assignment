@@ -1,8 +1,9 @@
 import { useQuery } from '@apollo/client/react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as Location from 'expo-location';
 import { AppleMaps, GoogleMaps } from 'expo-maps';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Analytics from '../api/Analytics';
 import { FETCH_LOCATIONS_NEARBY } from '../api/graphql_queries';
 import type { RootStackParamList } from '../navigation/types';
-import type { Location } from '../types/location';
+import type { Location as CampyLocation } from '../types/location';
 
 const AMSTERDAM = {
   latitude: 52.370216,
@@ -21,7 +22,9 @@ export function HomeScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-  const { data, loading, error } = useQuery<{ locations: Location[] }>(
+  const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
+
+  const { data, loading, error } = useQuery<{ locations: CampyLocation[] }>(
     FETCH_LOCATIONS_NEARBY,
     {
       variables: {
@@ -31,6 +34,14 @@ export function HomeScreen() {
       },
     }
   );
+
+  // Request location permission on mount
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      setLocationPermissionGranted(status === 'granted');
+    })();
+  }, []);
 
   const handlePlusPress = () => {
     Analytics.trackSubscriptionView('home');
@@ -54,16 +65,16 @@ export function HomeScreen() {
 
   const handleMarkerPress = useCallback(
     (markerId: string) => {
-      const location = data?.locations.find((loc) => loc.uid === markerId);
-      if (location) {
+      const campyLocation = data?.locations.find((loc) => loc.uid === markerId);
+      if (campyLocation) {
         Analytics.trackMapMarkerClick({
-          location_id: location.uid,
-          location_name: location.title,
-          location_rating: location.rating,
-          location_latitude: location.latitude,
-          location_longitude: location.longitude,
+          location_id: campyLocation.uid,
+          location_name: campyLocation.title,
+          location_rating: campyLocation.rating,
+          location_latitude: campyLocation.latitude,
+          location_longitude: campyLocation.longitude,
         });
-        navigation.navigate('LocationDetails', { location });
+        navigation.navigate('LocationDetails', { location: campyLocation });
       }
     },
     [data?.locations, navigation]
@@ -77,14 +88,14 @@ export function HomeScreen() {
     zoom: 11,
   };
 
-  const markers = data?.locations.map((location) => ({
-    id: location.uid,
+  const markers = data?.locations.map((loc) => ({
+    id: loc.uid,
     coordinates: {
-      latitude: location.latitude,
-      longitude: location.longitude,
+      latitude: loc.latitude,
+      longitude: loc.longitude,
     },
-    title: location.title,
-    snippet: location.address,
+    title: loc.title,
+    snippet: loc.address,
   })) ?? [];
 
   if (loading) {
@@ -112,10 +123,10 @@ export function HomeScreen() {
           style={styles.map}
           cameraPosition={cameraPosition}
           properties={{
-            isMyLocationEnabled: true,
+            isMyLocationEnabled: locationPermissionGranted,
           }}
           uiSettings={{
-            myLocationButtonEnabled: true,
+            myLocationButtonEnabled: locationPermissionGranted,
           }}
           markers={markers}
           onMarkerClick={(event) => event.id && handleMarkerPress(event.id)}
@@ -125,10 +136,10 @@ export function HomeScreen() {
           style={styles.map}
           cameraPosition={cameraPosition}
           properties={{
-            isMyLocationEnabled: true,
+            isMyLocationEnabled: locationPermissionGranted,
           }}
           uiSettings={{
-            myLocationButtonEnabled: true,
+            myLocationButtonEnabled: locationPermissionGranted,
           }}
           markers={markers}
           onMarkerClick={(event) => event.id && handleMarkerPress(event.id)}
