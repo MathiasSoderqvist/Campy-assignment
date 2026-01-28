@@ -15,7 +15,7 @@
 
 ---
 
-## One-time offer flow (demo)
+## One-time offer flow (demo) - Pixel XL
 
 <img
   src="apps/mobile/assets/images/one-time-offer.gif"
