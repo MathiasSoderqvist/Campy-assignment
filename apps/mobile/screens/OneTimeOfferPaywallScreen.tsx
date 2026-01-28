@@ -1,3 +1,6 @@
+import { RootStackParamList } from '@/navigation';
+import { CommonActions, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
 import {
     View,
@@ -7,14 +10,16 @@ import {
     Pressable,
     Image,
     Dimensions,
+    Platform,
+    ToastAndroid,
+    Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// If your design tokens exist, replace these constants with your tokens.
 const SPACING = {
-    s: 16,  // Spacing/spacing-s (guess; swap to your token)
-    l: 24,  // Spacing/spacing-l
+    s: 16,
+    l: 24,
     gap: 20,
     ctaGap: 8,
 };
@@ -22,12 +27,36 @@ const SPACING = {
 export function OneTimeOfferPaywallScreen() {
     const insets = useSafeAreaInsets();
 
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
     const onClose = () => {
-        // navigation.goBack() / dismiss modal
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'Main' }],
+            })
+        );
     };
 
+
     const onClaim = () => {
-        // purchase flow
+        if (Platform.OS === 'android') {
+            ToastAndroid.show(
+                '🎉 Discount applied! Enjoy Campy Plus.',
+                ToastAndroid.SHORT
+            );
+        } else {
+            Alert.alert(
+                'Discount applied',
+                '🎉 Enjoy Campy Plus!'
+            );
+        }
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'Main' }],
+            })
+        );
     };
 
     return (
@@ -105,7 +134,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
 
-    // Header matches: height 68, justify space-between, padding horizontal spacing-s
     header: {
         height: 68,
         paddingHorizontal: SPACING.s,
@@ -133,7 +161,7 @@ const styles = StyleSheet.create({
         width: 48,
         height: 48,
         borderRadius: 999,
-        backgroundColor: 'rgba(242,245,247,1)', // matches your “background/button” swatch
+        backgroundColor: 'rgba(242,245,247,1)',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -142,13 +170,12 @@ const styles = StyleSheet.create({
         height: 48,
     },
 
-    // Scrollview matches your padding + gap
     scrollContent: {
         paddingTop: SPACING.s,
         paddingRight: SPACING.s,
         paddingBottom: SPACING.l,
         paddingLeft: SPACING.s,
-        rowGap: SPACING.gap, // gap: 20px
+        rowGap: SPACING.gap,
     },
 
     heroWrap: {
@@ -170,19 +197,18 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 24,
-        lineHeight: 30, // 125% approx from your screenshot
+        lineHeight: 30,
         fontWeight: '700',
         color: '#000',
         letterSpacing: 0.33,
     },
     body: {
         fontSize: 17,
-        lineHeight: 26, // 150%
+        lineHeight: 26,
         fontWeight: '400',
         color: '#000',
     },
 
-    // CTA block matches: width 374, height 84, gap 8
     ctaWrap: {
         width: CONTENT_WIDTH,
         alignSelf: 'center',
@@ -191,7 +217,7 @@ const styles = StyleSheet.create({
     },
     ctaButton: {
         width: '100%',
-        height: 56, // your button “Fixed (56px)”
+        height: 56,
         borderRadius: 12,
         backgroundColor: '#000',
         alignItems: 'center',
@@ -206,8 +232,8 @@ const styles = StyleSheet.create({
         fontSize: 15,
         lineHeight: 20,
         fontWeight: '400',
-        color: 'rgba(51,51,51,1)', // your “color/text-body”
+        color: 'rgba(51,51,51,1)',
         textAlign: 'center',
-        opacity: 0.87, // you noted 87%
+        opacity: 0.87,
     },
 });

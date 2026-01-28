@@ -345,7 +345,7 @@ class Analytics {
   // Subscription Tracking
   // -------------------------------------------------------------------------
 
-  static trackSubscriptionView(source: 'home' | 'onboarding' | 'profile' | 'paywall') {
+  static trackSubscriptionView(source: 'home' | 'onboarding' | 'profile' | 'paywall' | 'one_time_offer') {
     Analytics.track(AnalyticsEvents.SUBSCRIPTION_VIEW, { source });
   }
 
