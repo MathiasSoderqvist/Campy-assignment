@@ -1,6 +1,7 @@
 import { RootStackParamList } from '@/navigation';
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { t } from 'i18next';
 import React from 'react';
 import {
     View,
@@ -105,20 +106,17 @@ export function OneTimeOfferPaywallScreen() {
 
                 {/* COPY */}
                 <View style={styles.copy}>
-                    <Text style={styles.title}>One-time offer: 50% off</Text>
-                    <Text style={styles.body}>
-                        Get Campy Plus for €14,98 instead of €29,99 for your first year.
-                        This is the lowest price to buy Campy Plus.
-                    </Text>
+                    <Text style={styles.title}>{t('oneTimeOffer.title')}</Text>
+                    <Text style={styles.body}>{t('oneTimeOffer.body')}</Text>
                 </View>
 
                 {/* CTA */}
                 <View style={styles.ctaWrap}>
                     <Pressable onPress={onClaim} style={styles.ctaButton}>
-                        <Text style={styles.ctaText}>Claim your one-time offer</Text>
+                        <Text style={styles.ctaText}>{t('oneTimeOffer.cta')}</Text>
                     </Pressable>
 
-                    <Text style={styles.disclaimer}>Recurring billing. Cancel anytime.</Text>
+                    <Text style={styles.disclaimer}>{t('oneTimeOffer.disclaimer')}</Text>
                 </View>
 
             </ScrollView>
