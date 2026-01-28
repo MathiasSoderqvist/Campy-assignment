@@ -96,5 +96,11 @@
       "car": "Car",
       "van": "Van"
     }
+  },
+  "oneTimeOffer": {
+    "title": "One-time offer: 50% off",
+    "body": "Get Campy Plus for €14,98 instead of €29,99 for your first year. This is the lowest price to buy Campy Plus.",
+    "cta": "Claim your one-time offer",
+    "disclaimer": "Recurring billing. Cancel anytime."
   }
 }
