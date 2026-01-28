@@ -9,21 +9,21 @@ import Analytics from '../../api/Analytics';
 import { CampyPlusContent } from '../../components/CampyPlusContent';
 import type { RootStackParamList } from '../../navigation/types';
 import { useOnboardingStore } from '../../stores/onboardingStore';
+import { onPaywallClosed } from '@/experiments/onPaywallClosed';
 
 export function CampyPlusScreen() {
   const { t } = useTranslation();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const { completeOnboarding, vehicleType } = useOnboardingStore();
 
-  // Track onboarding step view
   useEffect(() => {
     Analytics.trackOnboardingStepView('campy_plus', 2, 2);
     Analytics.trackSubscriptionView('onboarding');
   }, []);
 
-  const handleSkip = () => {
-    Analytics.trackOnboardingSkip('campy_plus', 2);
+  const finishOnboardingToMain = () => {
     Analytics.trackOnboardingComplete(vehicleType ?? undefined);
     completeOnboarding();
     navigation.reset({
@@ -32,14 +32,24 @@ export function CampyPlusScreen() {
     });
   };
 
+  const handleSkip = () => {
+    const didShowOffer = onPaywallClosed({
+      isEligiblePaywall: true,
+      isExistingUser: false,
+      showOffer: () => navigation.navigate('OneTimeOfferPaywall'),
+    });
+
+    // If we just triggered the offer, STOP here.
+    if (didShowOffer) return;
+
+    Analytics.trackOnboardingSkip('campy_plus', 2);
+    finishOnboardingToMain();
+  };
+
+
   const handlePurchaseSuccess = () => {
     Analytics.trackOnboardingStepComplete('campy_plus', 2);
-    Analytics.trackOnboardingComplete(vehicleType ?? undefined);
-    completeOnboarding();
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Main' }],
-    });
+    finishOnboardingToMain();
   };
 
   return (
