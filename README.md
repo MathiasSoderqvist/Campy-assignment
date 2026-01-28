@@ -15,6 +15,12 @@
 
 ---
 
+## One-time offer flow (demo)
+
+![One-time offer](apps/mobile/assets/images/one-time-offer.gif)
+
+---
+
 ## Issues I ran into
 
 ### iOS local environment issues
