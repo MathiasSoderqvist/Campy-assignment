@@ -17,7 +17,10 @@
 
 ## One-time offer flow (demo)
 
-![One-time offer](apps/mobile/assets/images/one-time-offer.gif)
+<img
+  src="apps/mobile/assets/images/one-time-offer.gif"
+  width="320"
+/>
 
 ---
 
