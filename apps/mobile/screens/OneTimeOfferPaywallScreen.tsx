@@ -76,6 +76,7 @@ export function OneTimeOfferPaywallScreen() {
                     accessibilityRole="button"
                     accessibilityLabel="Close"
                     hitSlop={10}
+                    pressRetentionOffset={12}
                     style={styles.closeButton}
                 >
                     <Image
@@ -94,7 +95,6 @@ export function OneTimeOfferPaywallScreen() {
             >
                 {/* HERO */}
                 <View style={styles.heroWrap}>
-                    {/* Replace with your asset */}
                     <Image
                         source={require('../assets/images/one-time-offer.png')}
                         style={styles.heroImage}
@@ -152,11 +152,6 @@ const styles = StyleSheet.create({
         height: 34,
     },
 
-    logoText: {
-        fontSize: 28,
-        fontWeight: '800',
-        color: '#000',
-    },
     closeButton: {
         width: 48,
         height: 48,
