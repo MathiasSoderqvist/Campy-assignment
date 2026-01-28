@@ -8,6 +8,7 @@ export type RootStackParamList = {
   VehiclePreferences: undefined;
   CampyPlus: undefined;
   CampyPlusModal: undefined;
+  OneTimeOfferPaywall: undefined;
   LocationDetails: { location: Location };
   Main: NavigatorScreenParams<MainTabParamList>;
 };
@@ -27,6 +28,6 @@ export type MainTabScreenProps<T extends keyof MainTabParamList> =
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
+    interface RootParamList extends RootStackParamList { }
   }
 }

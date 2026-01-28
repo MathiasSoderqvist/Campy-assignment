@@ -2,6 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 
 import { CampyPlusScreen } from '../screens/CampyPlusScreen';
+import { OneTimeOfferPaywallScreen } from '../screens/OneTimeOfferPaywallScreen';
 import { LocationDetailsScreen } from '../screens/LocationDetailsScreen';
 import {
   CampyPlusScreen as CampyPlusOnboardingScreen,
@@ -33,6 +34,11 @@ export function RootNavigator() {
       <Stack.Screen
         name="CampyPlusModal"
         component={CampyPlusScreen}
+        options={{ presentation: 'modal' }}
+      />
+      <Stack.Screen
+        name="OneTimeOfferPaywall"
+        component={OneTimeOfferPaywallScreen}
         options={{ presentation: 'modal' }}
       />
       <Stack.Screen
